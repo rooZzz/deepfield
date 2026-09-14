@@ -3,9 +3,9 @@ import { bindUi } from "./bind.ts";
 import { renderEmpty, renderLod, renderStatus } from "./chrome.ts";
 import { requireEl } from "./dom.ts";
 import { mountGraph } from "./graph.ts";
-import { paintStars } from "./graph-hud.ts";
+import { paintStars } from "./stars.ts";
 import { byId, clusterOfFile, files, pathIndexOf } from "./model.ts";
-import { paint, type PaintFns } from "./paint.ts";
+import { paint, paintCursor, type PaintFns } from "./paint.ts";
 import { makeRemark, pendingLabel, saveStaged, toInboxItem } from "./remarks.ts";
 import { bindReview, persistReview, toggleId } from "./review.ts";
 import { scopeFiles, scopeHeadline, scopeKeyOf } from "./scope.ts";
@@ -19,7 +19,6 @@ const fns: PaintFns = {
 
 async function boot(): Promise<void> {
   paintStars(requireEl("#stars"));
-  app.reelH = Math.max(220, Math.min(380, Math.round(window.innerHeight * 0.4)));
   const graph = await loadGraph();
   app.inbox = await loadInbox();
   if (!graph) {
@@ -77,6 +76,7 @@ function selectId(id: string): void {
     return;
   }
   syncCursor();
+  app.revealCursor = true;
   paint(fns);
   graphView?.frame(false);
 }
@@ -91,6 +91,7 @@ function goStep(i: number): void {
   if (first) {
     app.cursorId = first.file.id;
   }
+  app.revealCursor = true;
   paint(fns);
   graphView?.frame(false);
 }
@@ -100,16 +101,17 @@ function wholePath(): void {
   app.scope = { kind: "path" };
   app.focusId = null;
   syncCursor();
+  app.revealCursor = true;
   paint(fns);
   graphView?.frame(true);
 }
 
-function setCursor(id: string): void {
+function setCursor(id: string, reveal = true): void {
   app.cursorId = id;
   if (scopeFiles(app.graph, app.scope, app.hidden, app.pathIndex).some((row) => row.file.id === id)) {
     graphView?.focus(id);
   }
-  paint(fns);
+  paintCursor(fns, reveal);
 }
 
 function moveCursor(delta: number): void {
@@ -139,6 +141,7 @@ function toggleBucket(id: BucketId): void {
   app.hidden = app.hidden.includes(id) ? app.hidden.filter((item) => item !== id) : [...app.hidden, id];
   graphView?.replace(app.graph, app.hidden);
   syncCursor();
+  app.revealCursor = true;
   paint(fns);
 }
 

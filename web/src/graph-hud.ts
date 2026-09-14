@@ -1,9 +1,8 @@
 import type { Core } from "cytoscape";
 import type { GraphDocument } from "../../src/types.ts";
 import { el } from "./dom.ts";
-import { ACC, ACC3, HI, MED } from "./palette.ts";
-import { byId, clusterRisk, clusterSeverity, files, pathAt, pathClusters } from "./model.ts";
-import { ruleChip, ruleHint } from "./rules.ts";
+import { ACC, ACC3 } from "./palette.ts";
+import { byId, files, pathAt, pathClusters } from "./model.ts";
 import { LOD } from "./graph-elements.ts";
 import type { StagedRemark } from "./remarks.ts";
 import type { Scope } from "./scope.ts";
@@ -28,30 +27,6 @@ export function renderHud(pane: HTMLElement, cy: Core, model: HudModel, onSelect
   placeServices(pane, cy, model, taken, w, h, onSelect);
   placeClusters(pane, cy, model, taken, w, h, z);
   placeCrossings(pane, cy, model, taken, w, h);
-}
-
-export function paintStars(root: HTMLElement): void {
-  if (root.childElementCount) {
-    return;
-  }
-  for (let i = 0; i < 96; i++) {
-    const u1 = unit(`star${i}`);
-    const u2 = unit(`star:y${i}`);
-    const u3 = unit(`star:o${i}`);
-    const hot = u3 > 0.82;
-    const dot = el("span");
-    dot.style.left = `${u1 * 100}%`;
-    dot.style.top = `${u2 * 100}%`;
-    const size = hot ? 1.3 + u3 * 0.7 : 0.45 + u3 * 0.85;
-    dot.style.width = `${size}px`;
-    dot.style.height = `${size}px`;
-    dot.style.opacity = String(hot ? 0.38 + u3 * 0.22 : 0.1 + u3 * 0.28);
-    if (hot) {
-      dot.style.background = "#e4e7f5";
-      dot.style.boxShadow = "0 0 6px rgba(210, 206, 253, 0.55)";
-    }
-    root.append(dot);
-  }
 }
 
 function placeServices(
@@ -121,21 +96,6 @@ function placeClusters(
       }
       pane.append(wrap);
     }
-    const ruleId = clusterRisk(model.graph, id)[0];
-    if (ruleId && (sel || inPath || z > 1.05)) {
-      const rule = ruleChip(ruleId);
-      const cw = rule.length * 7 + 14;
-      const ink = clusterSeverity(model.graph, id) === "high" ? HI : MED;
-      const chipAt = place(bb.x2 + cw / 2, bb.y1 - 16, cw, 15, taken, w, h, false);
-      if (chipAt) {
-        const chip = el("div", { class: "hud-chip", title: ruleHint(ruleId) }, [rule]);
-        chip.style.left = `${chipAt.x - cw / 2}px`;
-        chip.style.top = `${chipAt.y}px`;
-        chip.style.border = `1px solid ${ink}`;
-        chip.style.color = ink;
-        pane.append(chip);
-      }
-    }
     const mine = model.remarks.filter((item) => item.fileId && members.some((file) => file.id === item.fileId));
     if (mine.length) {
       const pinAt = place(bb.x1 - 8, bb.y1 - 8, 17, 17, taken, w, h, true);
@@ -192,13 +152,4 @@ function place(cx: number, top: number, width: number, height: number, taken: Bo
   }
   taken.push(box);
   return { x, y };
-}
-
-function unit(key: string): number {
-  let hash = 2166136261;
-  for (let i = 0; i < key.length; i++) {
-    hash ^= key.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-  return (hash >>> 0) / 0xffffffff;
 }

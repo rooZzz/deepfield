@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
 
-test("shell shows path, graph, inspector, and reel", async ({ page }) => {
+test("shell shows path, graph, and a full-height review pane", async ({ page }) => {
   await page.goto("http://127.0.0.1:4173/");
-  await expect(page.locator("#mark")).toHaveText("Eagle Eye");
+  await expect(page.locator("#mark")).toHaveText("Deepfield");
   await expect(page.locator("#status")).toContainText("watching inbox");
   await expect(page.locator("#path-pane .path-step").first()).toBeVisible();
   await expect(page.locator("#path-pane .rail-title")).toHaveCount(0);
@@ -10,22 +10,34 @@ test("shell shows path, graph, inspector, and reel", async ({ page }) => {
   await page.locator("#path-pane .path-step").first().click();
   await expect.poll(async () =>
     page.evaluate(() => {
-      const api = (globalThis as { __eagleEye?: { filesVisible: () => boolean } }).__eagleEye;
+      const api = (globalThis as { __deepfield?: { filesVisible: () => boolean } }).__deepfield;
       return api?.filesVisible() ?? true;
     }),
   ).toBe(false);
   const zoom = await page.evaluate(() => {
-    const api = (globalThis as { __eagleEye?: { zoom: () => number } }).__eagleEye;
+    const api = (globalThis as { __deepfield?: { zoom: () => number } }).__deepfield;
     return api?.zoom() ?? 9;
   });
   expect(zoom).toBeLessThan(1.35);
   await expect(page.locator("#inspector")).toBeVisible();
   await expect(page.locator("#reel-scroll")).toBeVisible();
+  await expect(page.locator("#reel")).toHaveCount(0);
+  const stageBox = await page.locator("#stage").boundingBox();
+  const insBox = await page.locator("#inspector").boundingBox();
+  expect(stageBox?.height ?? 0).toBeGreaterThan(400);
+  expect(insBox?.y ?? 99).toBeLessThan(120);
+  expect(Math.abs((stageBox?.height ?? 0) - (insBox?.height ?? 0))).toBeLessThan(12);
   await page.locator("#path-pane .path-step").first().click();
-  const body = await page.locator("#inspector").innerText();
-  expect(body.includes("Retry") || body.includes("Boundary") || body.includes("risk") || body.includes("no risks")).toBeTruthy();
+  const fileChips = await page.locator("#reel-scroll .file-row .path-chip").count();
+  const railChips = await page.locator("#path-pane .path-chip").count();
+  expect(fileChips + railChips).toBeGreaterThan(0);
+  await expect(page.locator("#review-nav")).toBeVisible();
+  await expect(page.locator("#ins-brief .ins-title")).toBeVisible();
+  await expect(page.locator("#inspector .hit")).toHaveCount(0);
   const diff = await page.locator("#reel-scroll").innerText();
   expect(diff.length).toBeGreaterThan(0);
+  await expect(page.locator("#stars canvas")).toHaveCount(1);
+  await expect(page.locator(".hud-chip")).toHaveCount(0);
 });
 
 test("request changes writes inbox remarks and verdict", async ({ page }) => {
@@ -36,7 +48,7 @@ test("request changes writes inbox remarks and verdict", async ({ page }) => {
   await page.locator('#reel-scroll button[type="submit"]').click();
   await page.locator("#request-changes").click();
   await expect(page.locator("#status")).toContainText("inbox sent");
-  const res = await page.request.get("http://127.0.0.1:4173/.eagle-eye/inbox.json");
+  const res = await page.request.get("http://127.0.0.1:4173/.deepfield/inbox.json");
   const inbox = await res.json();
   expect(inbox.items[0].body).toContain("idempotent");
   expect(inbox.items[0].status).toBe("pending");
@@ -57,10 +69,10 @@ test("zoom reveals file nodes", async ({ page }) => {
   await page.goto("http://127.0.0.1:4173/");
   await expect(page.locator('#field canvas[data-id="layer2-node"]')).toBeVisible();
   await expect.poll(async () =>
-    page.evaluate(() => Boolean((globalThis as { __eagleEye?: unknown }).__eagleEye)),
+    page.evaluate(() => Boolean((globalThis as { __deepfield?: unknown }).__deepfield)),
   ).toBe(true);
   const before = await page.evaluate(() => {
-    const api = (globalThis as { __eagleEye?: { zoom: () => number; filesVisible: () => boolean } }).__eagleEye;
+    const api = (globalThis as { __deepfield?: { zoom: () => number; filesVisible: () => boolean } }).__deepfield;
     return { zoom: api?.zoom() ?? 0, files: api?.filesVisible() ?? false };
   });
   expect(before.files).toBe(false);
@@ -77,7 +89,7 @@ test("zoom reveals file nodes", async ({ page }) => {
   });
   await expect.poll(async () =>
     page.evaluate(() => {
-      const api = (globalThis as { __eagleEye?: { filesVisible: () => boolean } }).__eagleEye;
+      const api = (globalThis as { __deepfield?: { filesVisible: () => boolean } }).__deepfield;
       return api?.filesVisible() ?? false;
     }),
   ).toBe(true);
@@ -85,7 +97,7 @@ test("zoom reveals file nodes", async ({ page }) => {
 
 test("leftover review path does not unroll sibling risk evidence", async ({ page }) => {
   await page.goto("http://127.0.0.1:4173/");
-  const res = await page.request.get("http://127.0.0.1:4173/.eagle-eye/graph.json");
+  const res = await page.request.get("http://127.0.0.1:4173/.deepfield/graph.json");
   const graph = await res.json() as {
     nodes: Array<{ id: string; kind: string; memberIds?: string[]; repo?: string; path?: string }>;
     paths: string[][];
@@ -122,11 +134,102 @@ test("leftover review path does not unroll sibling risk evidence", async ({ page
       .filter((node) => node.kind === "file" && members.has(node.id))
       .map((node) => `${node.repo}/${node.path}`),
   );
-  const hitPaths = await page.locator("#inspector .hit .mono.dim").allTextContents();
-  expect(hitPaths.length).toBeGreaterThan(0);
-  for (const hitPath of hitPaths) {
-    expect(allowed.has(hitPath.trim())).toBeTruthy();
+  const rows = page.locator("#reel-scroll .file-row").filter({ has: page.locator(".path-chip") });
+  const n = await rows.count();
+  for (let i = 0; i < n; i++) {
+    const path = await rows.nth(i).locator(".file-path").getAttribute("title");
+    expect(allowed.has(path ?? "")).toBeTruthy();
   }
+  const files = await page.locator("#reel-scroll .file-row .file-path").evaluateAll((els) =>
+    els.map((el) => el.getAttribute("title") ?? "")
+  );
+  expect(files.length).toBeGreaterThan(0);
+  for (const filePath of files) {
+    expect(allowed.has(filePath)).toBeTruthy();
+  }
+});
+
+test("reading tools stay one row while walking files", async ({ page }) => {
+  await page.goto("http://127.0.0.1:4173/");
+  await page.locator("#path-pane .path-step").first().click();
+  await expect(page.locator("#review-nav .file-path")).toHaveCount(0);
+  const tools = page.locator("#review-tools");
+  const first = await tools.boundingBox();
+  expect(first?.height ?? 99).toBeLessThan(48);
+  const nav = await page.locator("#review-nav").boundingBox();
+  const actions = await page.locator("#review-actions").boundingBox();
+  expect(Math.abs((nav?.y ?? 0) - (actions?.y ?? 0))).toBeLessThan(6);
+  const heights = [Math.round(first?.height ?? 0)];
+  const n = await page.locator("#reel-scroll .file-row").count();
+  const steps = Math.min(6, Math.max(0, n - 1));
+  for (let i = 0; i < steps; i++) {
+    await page.keyboard.press("ArrowDown");
+    const box = await tools.boundingBox();
+    heights.push(Math.round(box?.height ?? 0));
+  }
+  expect(new Set(heights).size).toBe(1);
+});
+
+test("file cursor and hunk list stay in sync", async ({ page }) => {
+  await page.goto("http://127.0.0.1:4173/");
+  await page.locator("#path-pane .path-step").first().click();
+  const reel = page.locator("#reel-scroll");
+  const second = page.locator("#reel-scroll .file-row").nth(1);
+  await page.keyboard.press("ArrowDown");
+  await expect(second).toHaveClass(/cur/);
+  const reelBox = await reel.boundingBox();
+  const secondBox = await second.boundingBox();
+  expect((secondBox?.y ?? 99) - (reelBox?.y ?? 0)).toBeLessThan(56);
+  await expect(page.locator("#review-nav .nav-count")).toHaveText(/2 \/ /);
+  const last = page.locator("#reel-scroll .file-row").last();
+  const lastPath = await last.locator(".file-path").getAttribute("title");
+  await page.locator("#reel-scroll .file-block").last().evaluate((el) => {
+    el.scrollIntoView({ block: "start" });
+  });
+  await expect.poll(async () => page.locator("#reel-scroll .file-row.cur .file-path").getAttribute("title")).toBe(lastPath);
+});
+
+
+test("long hunk lines scroll inside the hunk, not the pane", async ({ page }) => {
+  await page.goto("http://127.0.0.1:4173/");
+  await page.locator("#path-pane .path-step").first().click();
+  const metrics = await page.evaluate(() => {
+    const reel = document.querySelector("#reel-scroll");
+    const row = document.querySelector("#reel-scroll .file-row");
+    const wrap = [...document.querySelectorAll("#reel-scroll .hunk-wrap")].find((el) => el.scrollWidth > el.clientWidth + 24);
+    if (!(reel instanceof HTMLElement) || !(row instanceof HTMLElement) || !(wrap instanceof HTMLElement)) {
+      return null;
+    }
+    const gutter = wrap.querySelector(".hunk-gutter");
+    const lineWidths = [...wrap.querySelectorAll(".hunk-line")].map((el) => el.offsetWidth);
+    const before = {
+      reel: reel.scrollWidth - reel.clientWidth,
+      rowX: row.getBoundingClientRect().x,
+      gutterX: gutter?.getBoundingClientRect().x ?? 0,
+      body: wrap.scrollWidth - wrap.clientWidth,
+      lineWidths,
+      wrapScroll: wrap.scrollWidth,
+    };
+    wrap.scrollLeft = Math.min(180, wrap.scrollWidth - wrap.clientWidth);
+    return {
+      before,
+      after: {
+        reel: reel.scrollWidth - reel.clientWidth,
+        rowX: row.getBoundingClientRect().x,
+        gutterX: gutter?.getBoundingClientRect().x ?? 0,
+        left: wrap.scrollLeft,
+      },
+    };
+  });
+  expect(metrics).toBeTruthy();
+  expect(metrics?.before.reel ?? 99).toBeLessThan(2);
+  expect(metrics?.before.body ?? 0).toBeGreaterThan(24);
+  expect(new Set(metrics?.before.lineWidths ?? []).size).toBe(1);
+  expect(metrics?.before.lineWidths?.[0] ?? 0).toBe(metrics?.before.wrapScroll ?? -1);
+  expect(metrics?.after.left ?? 0).toBeGreaterThan(20);
+  expect(metrics?.after.reel ?? 99).toBeLessThan(2);
+  expect(Math.abs((metrics?.after.rowX ?? 0) - (metrics?.before.rowX ?? 1))).toBeLessThan(1);
+  expect(Math.abs((metrics?.after.gutterX ?? 0) - (metrics?.before.gutterX ?? 1))).toBeLessThan(1);
 });
 
 test("hunks tokenize and staged review is a full-viewport row with inline context", async ({ page }) => {

@@ -3,17 +3,14 @@ import { composer, remarkCard } from "./composer.ts";
 import { el } from "./dom.ts";
 import { hunkRows } from "./hunk.ts";
 import { hunkUnavailable, renderHunkBody } from "./hunk-view.ts";
+import { chipsForFile, type InspectHit } from "./inspect-hits.ts";
 import { ADD } from "./palette.ts";
 import type { Pending, StagedRemark } from "./remarks.ts";
+import { ruleChip, ruleTitle } from "./rules.ts";
 import type { ScopeRow } from "./scope.ts";
 
 export function renderReelMeta(
   pane: HTMLElement,
-  scopeName: string,
-  kicker: string,
-  meta: string,
-  done: number,
-  total: number,
   cursor: ScopeRow | undefined,
   index: number,
   count: number,
@@ -21,43 +18,31 @@ export function renderReelMeta(
   onPrev: () => void,
   onNext: () => void,
   onMark: () => void,
-  onWholePath: () => void,
-  notPath: boolean,
 ): void {
   pane.replaceChildren();
-  pane.append(
-    el("div", { class: "mono accent", style: "font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;" }, [`scope · ${kicker}`]),
-    el("div", { style: "margin-top:3px;font-size:12.5px;" }, [scopeName]),
-    el("div", { class: "mono dim", style: "margin-top:2px;font-size:9.5px;" }, [meta]),
-  );
-  if (notPath) {
-    const back = el("button", { type: "button", class: "pill", style: "margin-top:8px;width:100%;" }, ["Back to whole scene"]);
-    back.addEventListener("click", onWholePath);
-    pane.append(back);
-  }
-  const pct = total ? (done / total) * 100 : 0;
-  pane.append(
-    el("div", { style: "margin-top:12px;height:3px;border-radius:2px;background:var(--color-neutral-900);overflow:hidden;" }, [
-      el("span", { style: `display:block;height:100%;width:${pct}%;background:${done === total && total ? ADD : "var(--color-accent)"}` }),
-    ]),
-    el("div", { class: "mono dim", style: "margin-top:8px;" }, ["reading"]),
-    el("div", { class: "mono", style: "margin-top:4px;font-size:11.5px;" }, [cursor ? `${cursor.file.repo}/${cursor.file.path}` : "—"]),
-    el("div", { class: "mono dim", style: "margin-top:4px;font-size:10px;" }, [cursor ? `${index + 1} / ${count} · ${cursor.file.class}` : ""]),
-  );
-  const nav = el("div", { style: "display:flex;gap:8px;margin-top:auto;padding-top:12px;" });
-  const prev = el("button", { type: "button", class: "pill", title: "[ or ↑" }, ["↑"]);
-  const next = el("button", { type: "button", class: "pill", title: "] or ↓" }, ["↓"]);
-  const mark = el("button", { type: "button", class: "pill", style: `flex:1;color:${reviewed ? ADD : "var(--color-accent)"};border-color:currentColor;` }, [reviewed ? "Reviewed ✓" : "Mark reviewed"]);
+  const prev = el("button", { type: "button", class: "pill nav-step", title: "[ or ↑" }, ["↑"]);
+  const next = el("button", { type: "button", class: "pill nav-step", title: "] or ↓" }, ["↓"]);
+  const mark = el("button", {
+    type: "button",
+    class: "pill mark-btn",
+    style: `color:${reviewed ? ADD : "var(--color-accent)"};border-color:currentColor;`,
+    title: "R — mark reviewed",
+  }, [reviewed ? "Reviewed" : "Mark"]);
   prev.addEventListener("click", onPrev);
   next.addEventListener("click", onNext);
   mark.addEventListener("click", onMark);
-  nav.append(prev, next, mark);
-  pane.append(nav);
+  pane.append(
+    prev,
+    next,
+    el("span", { class: "mono dim nav-count" }, [cursor ? `${index + 1} / ${count}` : "0 / 0"]),
+    mark,
+  );
 }
 
 export function renderReel(
   pane: HTMLElement,
   rows: ScopeRow[],
+  hits: InspectHit[],
   cursorId: string | null,
   reviewed: string[],
   remarks: StagedRemark[],
@@ -82,11 +67,11 @@ export function renderReel(
   }
   rows.forEach((row, i) => {
     const first = i === 0 || rows[i - 1].cluster.id !== row.cluster.id;
+    const block = el("div", { class: "file-block", "data-file-id": row.file.id });
     if (first) {
-      pane.append(stepHead(row, i === 0 ? undefined : rows[i - 1]));
+      block.append(stepHead(row, i === 0 ? undefined : rows[i - 1]));
     }
-    const block = el("div", { class: "file-block" });
-    block.append(fileBar(row, i, rows.length, row.file.id === cursorId, reviewed.includes(row.file.id), remarks, onCursor, onToggle, onRemarkFile));
+    block.append(fileBar(row, row.file.id === cursorId, reviewed.includes(row.file.id), remarks, chipsForFile(hits, row.file.id), onCursor, onToggle, onRemarkFile));
     for (const remark of remarks.filter((item) => item.kind === "file" && item.fileId === row.file.id)) {
       block.append(remarkCard(remark, row.file, onEdit, onDelete));
     }
@@ -113,16 +98,16 @@ function stepHead(row: ScopeRow, prev: ScopeRow | undefined): HTMLElement {
 
 function fileBar(
   row: ScopeRow,
-  i: number,
-  n: number,
   cur: boolean,
   done: boolean,
   remarks: StagedRemark[],
+  chips: InspectHit[],
   onCursor: (id: string) => void,
   onToggle: (id: string) => void,
   onRemarkFile: (id: string) => void,
 ): HTMLElement {
   const count = remarks.filter((item) => item.fileId === row.file.id).length;
+  const path = `${row.file.repo}/${row.file.path}`;
   const bar = el("div", { class: `file-row${cur ? " cur" : ""}`, style: `opacity:${done && !cur ? "0.6" : "1"}` });
   const tick = el("button", {
     type: "button",
@@ -140,15 +125,22 @@ function fileBar(
     event.stopPropagation();
     onRemarkFile(row.file.id);
   });
-  bar.append(
-    tick,
-    el("span", { class: "mono", style: `color:${cur ? "#e9e9ed" : "#b2b6ca"}` }, [`${row.file.repo}/${row.file.path}`]),
-    el("span", { class: "kicker" }, [row.file.class === "behavioural" ? "behavioural" : row.file.class]),
-    remark,
-    el("span", { class: "mono dim" }, [`${i + 1} / ${n}`]),
-  );
+  const end = el("span", { class: "file-end" }, [remark]);
+  bar.append(tick, el("span", { class: "mono file-path", title: path }, [path]), end);
+  if (chips.length) {
+    bar.append(chipRow(chips));
+  }
   bar.addEventListener("click", () => onCursor(row.file.id));
   return bar;
+}
+
+function chipRow(chips: InspectHit[]): HTMLElement {
+  const wrap = el("span", { class: "file-chips" });
+  for (const hit of chips) {
+    const hint = [ruleTitle(hit.rule), hit.excerpt].filter(Boolean).join(" — ");
+    wrap.append(el("span", { class: "path-chip", title: hint, style: `border-color:${hit.color};color:${hit.color}` }, [ruleChip(hit.rule)]));
+  }
+  return wrap;
 }
 
 function hunkBlock(
@@ -163,7 +155,7 @@ function hunkBlock(
   onEdit: (id: string) => void,
   onDelete: (id: string) => void,
 ): HTMLElement {
-  const wrap = el("div", { style: "padding:8px 0 14px;" });
+  const wrap = el("div", { class: "hunk-wrap" });
   const blocked = hunkUnavailable(file);
   if (blocked) {
     wrap.append(blocked);
@@ -198,4 +190,3 @@ function pendingLabel(path: string, from?: number, to?: number): string {
   }
   return path;
 }
-

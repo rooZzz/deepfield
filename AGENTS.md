@@ -1,4 +1,4 @@
-# Eagle Eye
+# Deepfield
 
 Review the change, not the diff. Keep the product, the skill, and the web
 app simple. Prefer boring, industry-standard Node patterns over novelty.
@@ -21,7 +21,7 @@ Project skill lives where Cursor loads it. Supporting code stays in `src/`
 and `web/`. Session files are written into the *target* workspace.
 
 ```text
-.cursor/skills/eagle-eye/
+.cursor/skills/deepfield/
   SKILL.md            required skill entry
   reference.md        graph schema, CLI, session files
   examples.md         invoke / apply loop
@@ -31,7 +31,7 @@ web/                  constellation SPA
 test/                 node tests + git fixture builder
 e2e/                  Playwright
 docs/                 PRD, mapping-and-risk, ux
-.eagle-eye/           graph.json + inbox.json in the reviewed workspace
+.deepfield/           graph.json + inbox.json in the reviewed workspace
 ```
 
 Do not invent extra packages. Do not put skills in `~/.cursor/skills-cursor/`.
@@ -71,8 +71,8 @@ A meta-repo is layout, not the change. Discover nested checkouts from
 *that* repo's base (`origin/main` by default). Do not use parent submodule
 pin SHAs as the file list. Skip checkouts whose local delta is empty.
 
-Skill loop: generate `.eagle-eye/graph.json`, boot the web app, watch
-`.eagle-eye/inbox.json`. On inbox change, apply comments to the named
+Skill loop: generate `.deepfield/graph.json`, boot the web app, watch
+`.deepfield/inbox.json`. On inbox change, apply comments to the named
 checkouts, then generate again. Never hand-edit `graph.json`.
 
 ## Product docs

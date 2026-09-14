@@ -59,8 +59,11 @@ function hunkLineEl(
     })
     : el("div", { class: cls });
   node.append(
-    el("span", { class: "accent" }, [opts.marked ? "◆" : ""]),
-    el("span", { class: "dim hunk-n" }, [kind === "meta" ? "" : String(n)]),
+    el("span", { class: "hunk-gutter" }, [
+      el("span", { class: "accent" }, [opts.marked ? "◆" : ""]),
+      el("span", { class: "dim hunk-n" }, [kind === "meta" ? "" : String(n)]),
+      el("span", { class: "hunk-sign" }, [kind === "meta" ? "" : lineSign(line)]),
+    ]),
     hunkCode(line, kind, tokens),
   );
   if (opts.interactive && opts.onLine && node instanceof HTMLButtonElement) {
@@ -71,21 +74,13 @@ function hunkLineEl(
 }
 
 function hunkCode(line: string, kind: ReturnType<typeof lineKind>, tokens: TokenSpan[] | undefined): HTMLElement {
+  const source = kind === "meta" ? line : sourceOfLine(line);
   if (kind === "meta" || !tokens?.length) {
-    const sign = lineSign(line);
-    if (kind !== "meta" && sign) {
-      const code = el("span", { class: "hunk-code split" });
-      code.append(el("span", { class: "hunk-sign" }, [sign]), document.createTextNode(sourceOfLine(line) || " "));
-      return code;
-    }
-    return el("span", { class: "hunk-code" }, [line || " "]);
+    return el("span", { class: "hunk-code" }, [source || " "]);
   }
-  const code = el("span", { class: "hunk-code split" });
-  code.append(el("span", { class: "hunk-sign" }, [lineSign(line)]));
-  const body = el("span", { class: "hunk-tokens" });
+  const body = el("span", { class: "hunk-code hunk-tokens" });
   for (const tok of tokens) {
     body.append(el("span", { style: tok.color ? `color:${tok.color}` : undefined }, [tok.text]));
   }
-  code.append(body);
-  return code;
+  return body;
 }

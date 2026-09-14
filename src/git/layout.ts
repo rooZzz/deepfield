@@ -11,7 +11,7 @@ const SKIP = new Set([
   "coverage",
   "playwright-report",
   "test-results",
-    ".eagle-eye",
+    ".deepfield",
     ".vite",
     "tmp",
 ]);

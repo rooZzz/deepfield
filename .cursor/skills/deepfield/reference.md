@@ -1,11 +1,11 @@
-# Eagle Eye skill reference
+# Deepfield skill reference
 
 ## Session files (in the reviewed workspace)
 
 ```text
-.eagle-eye/graph.json     generator output; web app reads
-.eagle-eye/inbox.json     web app writes remarks + verdict; this skill watches
-.eagle-eye/review.json    local reviewed ticks; not for the agent
+.deepfield/graph.json     generator output; web app reads
+.deepfield/inbox.json     web app writes remarks + verdict; this skill watches
+.deepfield/review.json    local reviewed ticks; not for the agent
 ```
 
 Both are gitignored. The web app does not call the agent. The agent does
@@ -13,7 +13,7 @@ not scrape the UI.
 
 ## CLI
 
-From the eagle-eye project (not necessarily the reviewed root):
+From the Deepfield project (not necessarily the reviewed root):
 
 ```bash
 npx tsx src/cli.ts generate --root <workspace>

@@ -17,7 +17,7 @@ export function renderLegend(pane: HTMLElement, open: boolean, onClose: () => vo
   const rows: Array<[string, string]> = [
     ["cluster", "size is behavioural weight"],
     ["hollow", "mechanical-only"],
-    ["corona", "high risk + one-word chip"],
+    ["corona", "heat = in-scope risk"],
     ["dashed", "contract edge"],
     ["violet arc", "cross-service import"],
     ["route", "selected review path"],

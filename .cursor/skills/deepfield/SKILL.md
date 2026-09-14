@@ -1,13 +1,13 @@
 ---
-name: eagle-eye
+name: deepfield
 description: >-
   Maps a vertical change as a deterministic clustered graph and boots the
-  Eagle Eye constellation web app. Use when the user asks for an Eagle Eye
+  Deepfield constellation web app. Use when the user asks for a Deepfield
   review, a change graph, a visual review of a meta-repo or multi-service
-  feature, or to apply comments from the Eagle Eye inbox.
+  feature, or to apply comments from the Deepfield inbox.
 ---
 
-# Eagle Eye
+# Deepfield
 
 Review the change, not the diff. Mapping and risk are a generator, not
 judgment. Follow `docs/mapping-and-risk.md`. UI follows `docs/ux.md`.
@@ -22,7 +22,7 @@ submodules). Parent gitlink pins may be stale. That is normal. Do not
 update pins unless the user asks.
 
 generate change graph and boot webapp
-listen for changes to .eagle-eye/inbox.json
+listen for changes to .deepfield/inbox.json
   — that is where the user's comments will be sent
   — when that file changes: make the changes, then regenerate the graph
 
@@ -35,7 +35,7 @@ npx tsx src/cli.ts serve --root "$REVIEW_ROOT"
 
 `REVIEW_ROOT` is the meta-repo (or single repo) on disk. Default: cwd.
 
-Do not hand-edit `.eagle-eye/graph.json`. Do not invent clusters, edges,
+Do not hand-edit `.deepfield/graph.json`. Do not invent clusters, edges,
 risk, or path order.
 
 ### Listen
@@ -44,11 +44,11 @@ risk, or path order.
 npx tsx src/cli.ts watch --root "$REVIEW_ROOT"
 ```
 
-This blocks until `.eagle-eye/inbox.json` changes, then exits 0.
+This blocks until `.deepfield/inbox.json` changes, then exits 0.
 
 ### When the inbox changes
 
-1. Read `.eagle-eye/inbox.json`. Ignore items with status `applied` or
+1. Read `.deepfield/inbox.json`. Ignore items with status `applied` or
    `blocked`.
 2. If `verdict.kind` is `approve` and nothing is `pending`, report that
    the review was approved. Do not invent extra edits.
@@ -66,7 +66,7 @@ This blocks until `.eagle-eye/inbox.json` changes, then exits 0.
 
 **Vertical feature in a submodule meta-repo**
 
-User: "Eagle Eye this." You generate, serve, and watch. You do not
+User: "Deepfield this." You generate, serve, and watch. You do not
 `git submodule update` first.
 
 **Comment apply**

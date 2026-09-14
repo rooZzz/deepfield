@@ -6,6 +6,7 @@ export type InspectHit = {
   rule: string;
   sev: RiskHit["severity"];
   color: string;
+  nodeId: string;
   path: string;
   excerpt: string;
 };
@@ -31,6 +32,33 @@ export function targetHits(graph: GraphDocument, id: string | null, edge: GraphE
   return [];
 }
 
+export function focusHits(
+  graph: GraphDocument,
+  focusId: string | null,
+  pathIndex: number,
+  onPath: boolean,
+): InspectHit[] {
+  const node = focusId ? byId(graph, focusId) : undefined;
+  const edge = focusId ? graph.edges.find((item) => item.id === focusId) : undefined;
+  if (!node && !edge && onPath) {
+    return pathHits(graph, pathIndex);
+  }
+  return targetHits(graph, focusId, edge);
+}
+
+export function chipsForFile(hits: InspectHit[], fileId: string): InspectHit[] {
+  const seen = new Set<string>();
+  const out: InspectHit[] = [];
+  for (const hit of hits) {
+    if (hit.nodeId !== fileId || seen.has(hit.rule)) {
+      continue;
+    }
+    seen.add(hit.rule);
+    out.push(hit);
+  }
+  return out;
+}
+
 export function scopedHits(graph: GraphDocument, fileIds: Set<string>): InspectHit[] {
   const out: InspectHit[] = [];
   for (const hit of graph.risks) {
@@ -42,6 +70,7 @@ export function scopedHits(graph: GraphDocument, fileIds: Set<string>): InspectH
         rule: hit.ruleId,
         sev: hit.severity,
         color: hit.severity === "high" ? HI : MED,
+        nodeId: item.nodeId,
         path: `${item.repo}/${item.path}`,
         excerpt: item.excerpt ?? "",
       });

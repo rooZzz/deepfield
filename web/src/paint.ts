@@ -2,21 +2,23 @@ import { bucketOf, BUCKETS, type BucketId } from "./buckets.ts";
 import { renderEmpty, renderFilters, renderProgress, renderStagedChip, renderStatus, renderVeil } from "./chrome.ts";
 import { requireEl } from "./dom.ts";
 import { ensureHighlighter } from "./highlight.ts";
+import { focusHits } from "./inspect-hits.ts";
 import { renderInspector } from "./inspector.ts";
 import { renderLegend } from "./legend.ts";
 import { files } from "./model.ts";
 import { renderPath } from "./path-rail.ts";
+import { paintCursorRows, revealFile, runWithoutReelSync } from "./reel-cursor.ts";
 import { renderReel, renderReelMeta } from "./reel.ts";
 import { inScope } from "./remarks.ts";
-import { applyLayout, dragIns, dragRail } from "./resize.ts";
+import { applyLayout, dragRail } from "./resize.ts";
 import { pathProgress } from "./review.ts";
-import { scopeFiles, scopeHeadline, scopeKeyOf } from "./scope.ts";
+import { scopeFiles, scopeKeyOf } from "./scope.ts";
 import { app, graphView } from "./state.ts";
 import { renderStaged } from "./staged.ts";
 
 export type PaintFns = {
   goStep: (i: number) => void;
-  setCursor: (id: string) => void;
+  setCursor: (id: string, reveal?: boolean) => void;
   selectId: (id: string) => void;
   toggleBucket: (id: BucketId) => void;
   toggleReviewed: (id?: string) => void;
@@ -62,20 +64,26 @@ export function paint(fns: PaintFns): void {
   }
   pane.classList.toggle("closed", !app.railOpen);
   const rows = scopeFiles(graph, app.scope, app.hidden, app.pathIndex);
-  renderInspector(requireEl("#inspector"), graph, app.focusId, app.scope, app.pathIndex, rows, app.cursorId, app.review.reviewed, app.insOpen, () => {
+  renderInspector(requireEl("#ins-brief"), graph, app.focusId, app.scope, app.pathIndex, app.insOpen, () => {
     app.insOpen = !app.insOpen;
     paint(fns);
-  }, dragIns, fns.setCursor, fns.selectId);
+  });
   requireEl("#inspector").classList.toggle("closed", !app.insOpen);
-  const meta = scopeHeadline(graph, app.scope, app.pathIndex);
-  const cursor = rows.find((row) => row.file.id === app.cursorId) ?? rows[0];
-  const idx = Math.max(0, rows.findIndex((row) => row.file.id === app.cursorId));
-  renderReelMeta(requireEl("#reel-meta"), fns.scopeName(), app.scope.kind, meta.summary, whole.done, whole.total, cursor, idx, rows.length, Boolean(cursor && app.review.reviewed.includes(cursor.file.id)), () => fns.moveCursor(-1), () => fns.moveCursor(1), fns.mark, fns.wholePath, app.scope.kind !== "path");
-  renderReel(requireEl("#reel-scroll"), rows, app.cursorId, app.review.reviewed, inScope(app.remarks, scopeKeyOf(app.scope)), app.pending, app.draft, fns.setCursor, fns.toggleReviewed, fns.pickFile, fns.pickLine, (value) => {
+  const hits = focusHits(graph, app.focusId, app.pathIndex, app.scope.kind === "path");
+  paintReelChrome(fns);
+  const reel = requireEl("#reel-scroll");
+  const reelY = reel.scrollTop;
+  renderReel(reel, rows, hits, app.cursorId, app.review.reviewed, inScope(app.remarks, scopeKeyOf(app.scope)), app.pending, app.draft, fns.setCursor, fns.toggleReviewed, fns.pickFile, fns.pickLine, (value) => {
     app.draft = value;
   }, fns.stage, fns.clearPending, fns.editRemark, fns.deleteRemark);
-  requireEl("#reel-scope").textContent = fns.scopeName();
-  requireEl("#app").classList.toggle("reel-closed", !app.reelOpen);
+  runWithoutReelSync(() => {
+    if (app.revealCursor) {
+      revealFile(reel, app.cursorId);
+      app.revealCursor = false;
+    } else {
+      reel.scrollTop = reelY;
+    }
+  });
   applyLayout();
   renderLegend(requireEl("#legend"), app.legend, () => {
     app.legend = false;
@@ -90,4 +98,29 @@ export function paint(fns: PaintFns): void {
   }
   graphView?.emphasize(app.scope);
   graphView?.hud();
+}
+
+export function paintCursor(fns: PaintFns, reveal: boolean): void {
+  paintReelChrome(fns);
+  const reel = requireEl("#reel-scroll");
+  paintCursorRows(reel, app.cursorId);
+  if (reveal) {
+    revealFile(reel, app.cursorId);
+  }
+}
+
+function paintReelChrome(fns: PaintFns): void {
+  const rows = scopeFiles(app.graph, app.scope, app.hidden, app.pathIndex);
+  const cursor = rows.find((row) => row.file.id === app.cursorId) ?? rows[0];
+  const idx = Math.max(0, rows.findIndex((row) => row.file.id === app.cursorId));
+  renderReelMeta(
+    requireEl("#review-nav"),
+    cursor,
+    idx,
+    rows.length,
+    Boolean(cursor && app.review.reviewed.includes(cursor.file.id)),
+    () => fns.moveCursor(-1),
+    () => fns.moveCursor(1),
+    fns.mark,
+  );
 }

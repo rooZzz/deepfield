@@ -24,7 +24,7 @@ export type Pending =
   | { kind: "line"; fileId: string; anchor: number; from: number; to: number }
   | { kind: "lines"; fileId: string; anchor: number; from: number; to: number };
 
-const KEY = "eagle-eye:staged-remarks:v2";
+const KEY = "deepfield:staged-remarks:v2";
 const AUTHOR = "you";
 
 export function loadStaged(): StagedRemark[] {

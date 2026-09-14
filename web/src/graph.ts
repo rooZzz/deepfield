@@ -9,7 +9,8 @@ import { renderHud, type HudModel } from "./graph-hud.ts";
 import { frameScope, litClusterIds, recedeOutside } from "./graph-frame.ts";
 import { graphStyle } from "./graph-style.ts";
 import { byId } from "./model.ts";
-import { paintNebula } from "./nebula.ts";
+import { paintGalaxies } from "./galaxies.ts";
+import { shiftStars } from "./stars.ts";
 import { edgeClusterIds, type Scope } from "./scope.ts";
 
 export type GraphView = {
@@ -40,6 +41,7 @@ export function mountGraph(
   handlers: GraphHandlers,
 ): GraphView {
   const overlay = requireEl("#map-hud");
+  container.style.background = "transparent";
   const cy = cytoscape({
     container,
     elements: toElements(graph, hidden),
@@ -53,7 +55,8 @@ export function mountGraph(
   let hudTick = 0;
   const paintHud = () => {
     const hud = handlers.hud();
-    paintNebula(cy, litServices(hud));
+    paintGalaxies(cy, litServices(hud));
+    shiftStars(cy.pan(), cy.zoom());
     renderHud(overlay, cy, hud, handlers.onSelect);
   };
   const scheduleHud = () => {
@@ -220,7 +223,7 @@ function applyLod(cy: Core): void {
 }
 
 function expose(cy: Core): void {
-  (globalThis as { __eagleEye?: { zoom: () => number; filesVisible: () => boolean } }).__eagleEye = {
+  (globalThis as { __deepfield?: { zoom: () => number; filesVisible: () => boolean } }).__deepfield = {
     zoom: () => cy.zoom(),
     filesVisible: () => cy.zoom() >= LOD.files,
   };

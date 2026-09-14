@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Eagle Eye</title>
+    <title>Deepfield</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -21,11 +21,13 @@
       <header id="topbar">
         <div class="brand">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M1.5 12s4-6.5 10.5-6.5S22.5 12 22.5 12s-4 6.5-10.5 6.5S1.5 12 1.5 12Z" stroke="var(--color-accent)" stroke-width="1.2" opacity="0.75"></path>
-            <circle cx="12" cy="12" r="3.4" stroke="var(--color-accent)" stroke-width="1.2"></circle>
-            <circle cx="12" cy="12" r="1.1" fill="var(--color-accent)"></circle>
+            <circle cx="12" cy="6.5" r="1.15" fill="var(--color-accent)"></circle>
+            <circle cx="6.8" cy="14.2" r="0.9" fill="var(--color-accent)" opacity="0.72"></circle>
+            <circle cx="17.4" cy="13.4" r="0.8" fill="var(--color-accent)" opacity="0.55"></circle>
+            <circle cx="12.2" cy="17.6" r="0.5" fill="var(--color-accent)" opacity="0.4"></circle>
+            <path d="M12 6.5 6.8 14.2M12 6.5 17.4 13.4M6.8 14.2 17.4 13.4" stroke="var(--color-accent)" stroke-width="0.8" opacity="0.42"></path>
           </svg>
-          <p id="mark">Eagle Eye</p>
+          <p id="mark">Deepfield</p>
         </div>
         <div class="rule"></div>
         <div class="status-row">
@@ -50,9 +52,9 @@
       <div id="shell">
         <aside id="path-pane" aria-label="review path"></aside>
         <main id="stage">
-          <div id="stars" aria-hidden="true"></div>
           <div id="field" aria-label="change graph">
-            <canvas id="nebula" aria-hidden="true"></canvas>
+            <div id="stars" aria-hidden="true"></div>
+            <canvas id="galaxies" aria-hidden="true"></canvas>
             <div id="cy"></div>
             <div id="map-hud"></div>
           </div>
@@ -81,26 +83,24 @@
           <div id="legend" hidden></div>
           <p id="empty-field" class="empty" hidden>no change to review</p>
         </main>
-        <aside id="inspector" aria-label="inspector"></aside>
-      </div>
-
-      <footer id="reel">
-        <div id="reel-grip" class="resize reel" title="Drag to resize"></div>
-        <div id="reel-meta"></div>
-        <div id="reel-body">
-          <div id="reel-head">
-            <button type="button" id="reel-toggle" aria-label="Collapse reel">▾</button>
-            <span class="kicker">Changes in scope</span>
-            <span id="reel-scope" class="accent mono"></span>
-            <span class="spacer"></span>
-            <button type="button" id="remark-scope" class="pill">remark on scope</button>
-            <button type="button" id="request-changes" class="pill">request changes</button>
-            <button type="button" id="approve" class="pill">approve</button>
-            <span id="reel-hint" class="mono dim">↑ ↓ file · space mark &amp; next · J K path</span>
+        <aside id="inspector" aria-label="review">
+          <div id="ins-grip" class="resize ins" title="Drag to resize"></div>
+          <button type="button" id="ins-fold" class="side-fold" aria-label="Open review">Review</button>
+          <div id="ins-open">
+            <div id="ins-brief"></div>
+            <div id="review-tools">
+              <div id="review-nav"></div>
+              <div id="review-actions">
+                <button type="button" id="remark-scope" class="pill" title="Remark on this scope">remark</button>
+                <button type="button" id="request-changes" class="pill" title="Request changes">request</button>
+                <button type="button" id="approve" class="pill" title="Approve">approve</button>
+              </div>
+            </div>
+            <div id="reel-scroll" aria-label="diff"></div>
+            <p id="review-hint" class="mono dim">↑ ↓ file · space mark &amp; next · J K path</p>
           </div>
-          <div id="reel-scroll" aria-label="diff"></div>
-        </div>
-      </footer>
+        </aside>
+      </div>
     </div>
 
     <div id="overlay" hidden>

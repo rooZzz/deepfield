@@ -2,20 +2,20 @@ import { readFile, writeFile } from "node:fs/promises";
 import type { Plugin } from "vite";
 import { graphPath, inboxPath, reviewPath } from "./session.ts";
 
-export function eagleEyePlugin(root: string): Plugin {
+export function deepfieldPlugin(root: string): Plugin {
   return {
-    name: "eagle-eye-session",
+    name: "deepfield-session",
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         const url = req.url?.split("?")[0] ?? "";
         try {
-          if (await serveFile(req, res, url, "/.eagle-eye/graph.json", graphPath(root), "GET")) {
+          if (await serveFile(req, res, url, "/.deepfield/graph.json", graphPath(root), "GET")) {
             return;
           }
-          if (await serveFile(req, res, url, "/.eagle-eye/inbox.json", inboxPath(root), req.method ?? "GET")) {
+          if (await serveFile(req, res, url, "/.deepfield/inbox.json", inboxPath(root), req.method ?? "GET")) {
             return;
           }
-          if (await serveFile(req, res, url, "/.eagle-eye/review.json", reviewPath(root), req.method ?? "GET")) {
+          if (await serveFile(req, res, url, "/.deepfield/review.json", reviewPath(root), req.method ?? "GET")) {
             return;
           }
         } catch (error) {
@@ -46,7 +46,7 @@ async function serveFile(
       res.setHeader("content-type", "application/json");
       res.end(body);
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === "ENOENT" && route !== "/.eagle-eye/graph.json") {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT" && route !== "/.deepfield/graph.json") {
         res.setHeader("content-type", "application/json");
         res.end(route.includes("review") ? '{"version":1,"graphId":"","reviewed":[]}' : '{"version":1,"items":[]}');
         return true;

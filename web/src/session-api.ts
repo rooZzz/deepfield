@@ -1,7 +1,7 @@
 import type { GraphDocument, InboxDocument, ReviewDocument } from "../../src/types.ts";
 
 export async function loadGraph(): Promise<GraphDocument | null> {
-  const res = await fetch("/.eagle-eye/graph.json");
+  const res = await fetch("/.deepfield/graph.json");
   if (!res.ok) {
     return null;
   }
@@ -9,7 +9,7 @@ export async function loadGraph(): Promise<GraphDocument | null> {
 }
 
 export async function loadInbox(): Promise<InboxDocument> {
-  const res = await fetch("/.eagle-eye/inbox.json");
+  const res = await fetch("/.deepfield/inbox.json");
   if (!res.ok) {
     return { version: 1, items: [] };
   }
@@ -17,7 +17,7 @@ export async function loadInbox(): Promise<InboxDocument> {
 }
 
 export async function saveInbox(inbox: InboxDocument): Promise<void> {
-  const res = await fetch("/.eagle-eye/inbox.json", {
+  const res = await fetch("/.deepfield/inbox.json", {
     method: "PUT",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(inbox, null, 2),
@@ -28,7 +28,7 @@ export async function saveInbox(inbox: InboxDocument): Promise<void> {
 }
 
 export async function loadReview(): Promise<ReviewDocument> {
-  const res = await fetch("/.eagle-eye/review.json");
+  const res = await fetch("/.deepfield/review.json");
   if (!res.ok) {
     return { version: 1, graphId: "", reviewed: [] };
   }
@@ -36,7 +36,7 @@ export async function loadReview(): Promise<ReviewDocument> {
 }
 
 export async function saveReview(review: ReviewDocument): Promise<void> {
-  const res = await fetch("/.eagle-eye/review.json", {
+  const res = await fetch("/.deepfield/review.json", {
     method: "PUT",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(review, null, 2),

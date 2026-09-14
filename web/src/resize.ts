@@ -9,7 +9,6 @@ function apply(): void {
   const root = requireEl("#app");
   root.style.setProperty("--rail-w", app.railOpen ? `${app.railW}px` : "34px");
   root.style.setProperty("--ins-w", app.insOpen ? `${app.insW}px` : "34px");
-  root.style.setProperty("--reel-h", app.reelOpen ? `${app.reelH}px` : "32px");
   graphView?.resize();
 }
 
@@ -39,17 +38,7 @@ export function dragIns(event: PointerEvent): void {
   const x0 = event.clientX;
   const w0 = app.insW;
   drag((ev) => {
-    app.insW = clamp(w0 + (x0 - ev.clientX), 250, 560);
-    apply();
-  });
-}
-
-export function dragReel(event: PointerEvent): void {
-  event.preventDefault();
-  const y0 = event.clientY;
-  const h0 = app.reelH;
-  drag((ev) => {
-    app.reelH = clamp(h0 + (y0 - ev.clientY), 140, window.innerHeight - 220);
+    app.insW = clamp(w0 + (x0 - ev.clientX), 380, 720);
     apply();
   });
 }

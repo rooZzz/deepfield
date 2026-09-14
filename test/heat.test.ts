@@ -1,64 +1,56 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { GraphDocument } from "../src/types.ts";
-import { chipsForFile, pathHits, targetHits } from "../web/src/inspect-hits.ts";
+import { clusterHeat, clusterTone, fileTone, heatGlow } from "../web/src/heat.ts";
+import { clusterSeverity } from "../web/src/model.ts";
 
 function graph(): GraphDocument {
   return {
     version: 1,
     root: ".",
     nodes: [
-      { id: "s:a", kind: "service", repo: "checkout-http" },
-      { id: "s:b", kind: "service", repo: "ledger-svc" },
       { id: "c:small", kind: "cluster", repo: "checkout-http", title: "checkout/http", memberIds: ["f:form", "f:client"], summary: "2 files" },
       { id: "c:money", kind: "cluster", repo: "ledger-svc", title: "ledger/balance", memberIds: ["f:ledger"], summary: "1 file" },
+      { id: "c:noise", kind: "cluster", repo: "checkout-http", title: "checkout/util", memberIds: ["f:util"], summary: "1 file" },
       { id: "f:form", kind: "file", repo: "checkout-http", path: "src/form.ts", change: "modify", class: "behavioural" },
       { id: "f:client", kind: "file", repo: "checkout-http", path: "src/client.ts", change: "modify", class: "behavioural" },
       { id: "f:ledger", kind: "file", repo: "ledger-svc", path: "src/balance.ts", change: "modify", class: "behavioural" },
+      { id: "f:util", kind: "file", repo: "checkout-http", path: "src/util.ts", change: "modify", class: "behavioural" },
     ],
     edges: [],
     risks: [{
       id: "risk:R10",
       ruleId: "R10_PAYMENT_MONEY",
       severity: "high",
-      clusterIds: ["c:small", "c:money"],
+      clusterIds: ["c:small", "c:money", "c:noise"],
       serviceIds: ["service:checkout-http", "service:ledger-svc"],
       evidence: [
         { nodeId: "f:form", path: "src/form.ts", repo: "checkout-http", excerpt: "currency" },
         { nodeId: "f:ledger", path: "src/balance.ts", repo: "ledger-svc", excerpt: "writeEntry" },
       ],
     }],
-    paths: [["c:small"], ["c:money"]],
+    paths: [["c:small"], ["c:money"], ["c:noise"]],
     positions: {},
     warnings: [],
   };
 }
 
-test("a review path only lists risk evidence on that path", () => {
+test("map heat follows evidence files, not packed clusterIds", () => {
   const doc = graph();
-  const hits = pathHits(doc, 0);
-  assert.equal(hits.length, 1);
-  assert.equal(hits[0]?.path, "checkout-http/src/form.ts");
-  assert.equal(hits[0]?.nodeId, "f:form");
-  const money = pathHits(doc, 1);
-  assert.equal(money.length, 1);
-  assert.equal(money[0]?.path, "ledger-svc/src/balance.ts");
+  assert.equal(clusterSeverity(doc, "c:noise"), "high");
+  assert.equal(clusterTone(doc, "c:noise"), "none");
+  assert.equal(clusterHeat(doc, "c:noise"), 0);
+  assert.equal(clusterTone(doc, "c:small"), "high");
+  assert.equal(clusterHeat(doc, "c:small"), 2);
+  assert.equal(clusterTone(doc, "c:money"), "high");
+  assert.equal(fileTone(doc, "f:form"), "high");
+  assert.equal(fileTone(doc, "f:client"), "none");
+  assert.equal(fileTone(doc, "f:util"), "none");
 });
 
-test("cluster and file inspectors do not import sibling evidence", () => {
-  const doc = graph();
-  const cluster = targetHits(doc, "c:small", undefined);
-  assert.deepEqual(cluster.map((hit) => hit.path), ["checkout-http/src/form.ts"]);
-  const file = targetHits(doc, "f:form", undefined);
-  assert.equal(file.length, 1);
-  assert.equal(file[0]?.path, "checkout-http/src/form.ts");
-});
-
-test("file chips are unique per rule on that file", () => {
-  const doc = graph();
-  const hits = pathHits(doc, 0);
-  const chips = chipsForFile(hits, "f:form");
-  assert.equal(chips.length, 1);
-  assert.equal(chips[0]?.rule, "R10_PAYMENT_MONEY");
-  assert.equal(chipsForFile(hits, "f:ledger").length, 0);
+test("corona glow scales with evidence count", () => {
+  const none = heatGlow(0, "none");
+  const hot = heatGlow(6, "high");
+  assert.ok(hot.glow > none.glow);
+  assert.ok(hot.halo > none.halo);
 });

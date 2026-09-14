@@ -1,4 +1,4 @@
-# Eagle Eye — UX and UI (draft v0.1)
+# Deepfield — UX and UI (draft v0.1)
 
 **Status:** draft, paired with `docs/prd.md` v0.5.
 **Job of this document:** the product must feel like looking down on a
@@ -12,7 +12,7 @@ Impressive is a requirement. Novelty-for-its-own-sake is not.
 
 ## 1. Intent
 
-Eagle Eye is a **constellation of change**: a dark field, services as
+Deepfield is a **constellation of change**: a dark field, services as
 territories, clusters as bodies of light, risk as flare, the review path
 as a route you can walk. The first impression has to be spatial and
 serious — closer to a night operations map than to GitHub, Graphviz, or a
@@ -37,9 +37,11 @@ is wrong.
 - Aerial, not bureaucratic
 - Dense, not cluttered
 - Quiet chrome, loud map
-- Graph in the centre; path, inspector, and diff have their own panes
+- Graph in the centre, full height; path rail left; review (compact
+  title + hunks) on the right — widescreen width, not a crushed bottom strip
 - Light means *signal* (risk, selection, path). The field stays dark.
-- Motion is camera and settlement, not decoration
+- Motion is camera and settlement, not decoration. Star parallax is
+  camera, not a second animation channel.
 
 ---
 
@@ -47,7 +49,7 @@ is wrong.
 
 On boot (graph already generated):
 
-1. **0–300ms** — black field, product mark “Eagle Eye”, no spinner circus.
+1. **0–300ms** — black field, product mark “Deepfield”, no spinner circus.
 2. **Settlement** — service territories ease into place from a
    deterministic layout seed. Clusters appear as points, then take size.
 3. **Path lights** — review paths draw as routes on the map, then the
@@ -71,22 +73,34 @@ layering). It should already look like a top-down constellation. Literal
 
 ### Layers (back → front)
 
-1. **Field** — near-black, sparse stars, faint cool dust. Not a photograph,
-   not a stock starfield texture.
-2. **Service territories** — nebula blooms, one per checkout. Overlapping
-   translucent gas in the Nocturne cool palette, irregular silhouette,
-   hashed from the service id (not a colour legend). Empty-delta context
-   services (if shown) are dimmer and not in the path. Gas sits *behind*
-   clusters and edges; it never hides internals.
+1. **Field** — near-black, a Poisson-scattered star field (far dust,
+   sparse brights), faint cool dust. Positions come from a seeded blue-
+   noise sample, not a hash of `i`, a grid, or a golden-ratio spiral.
+   Three depths **parallax with the Cytoscape camera**: far almost still,
+   mid a little, near more. Stars wrap so the sky never runs out. A few
+   near stars may twinkle slowly. Stars sit **behind** galaxies and
+   **below** clusters. Not a photograph, not a stock starfield, not a
+   screensaver, not idle drift. Stars never out-bright clusters, edges,
+   or labels.
+2. **Service territories** — a galaxy of stars per checkout, not a gas
+   bloom. Seeded spiral, barred, or elliptical **star clusters** along
+   log arms (seeded PRNG like the field; never a hash grid). Dense enough
+   to read as a territory, sparse enough that graph clusters, edges, and
+   HUD text stay on top. Palette is hashed from the service id (not a
+   colour legend). Empty-delta context services (if shown) are dimmer
+   and not in the path. Field stars sit behind galaxies; galaxies sit
+   behind the graph.
 3. **Edges** — in-service: short, dim. Cross-service: longer, higher arc,
    brighter. Contract edges are distinct from import edges (weight + dash,
    not colour alone).
 4. **Clusters** — the primary bodies. Size = behavioural weight (count of
    `behavioural` files, not raw LOC). Title = path prefix from the
    generator.
-5. **Risk corona** — a ring / flare on clusters that have hits. Strength
-   follows max severity. Always paired with a one-word rule chip
-   (`Retry`, `Boundary`, `Money`, …), never `R3` / `R10`.
+5. **Risk heat** — fill + corona on clusters (and file dots when close)
+   scale with how much in-scope evidence sits in that body. Cool = none,
+   amber = medium, hot = high. Brighter / larger corona = more hits.
+   Colour and corona together; colour-only is a fail. Rule names live
+   in the inspector and on the path rail, not as chips on the map.
 6. **Path** — a polyline through each review path’s clusters. The
    selected path is the brightest route on the map.
 7. **Selection** — one focus. Everything else recedes (dim, do not hide).
@@ -115,7 +129,7 @@ endpoint clusters and the interconnect**, never a hidden file or a
 single end). Import, contract, and path-hop lines on the map all select
 that way. Paint (ticks, remarks) does not reset the camera. Clicking
 empty field / `P` fits the whole scene and lights every path. Click a
-file (once visible) to load it in the inspector and the bottom diff.
+file (once visible) to load it in the review pane.
 
 Never replace the map with a file list page.
 
@@ -137,21 +151,26 @@ Cytoscape (preset layout, wheel zoom, zoom LOD). Chrome is structural.
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
-│ TOP   eye  EAGLE EYE  · status  ·  n/N reviewed  ·  ?           │
+│ TOP   mark  DEEPFIELD  · status  ·  n/N reviewed  ·  ?          │
 ├─────────────────────────────────────────────────────────────────┤
 │ INCLUDE   behavioural  tests  boilerplate  docs  generated      │
 ├──────────┬──────────────────────────────────┬───────────────────┤
-│ REVIEW   │                                  │ INSPECTOR         │
-│ PATHS    │            GRAPH                 │ facts, risk,      │
-│ list     │     (Cytoscape constellation)    │ in-scope files    │
-├──────────┴──────────────────────────────────┴───────────────────┤
-│ REEL   reading cursor · mark   │  files in the current context  │
-└─────────────────────────────────────────────────────────────────┘
+│ REVIEW   │                                  │ REVIEW            │
+│ PATHS    │            GRAPH                 │ title · summary,  │
+│ list     │     (full height constellation)  │ reading cursor,   │
+│          │                                  │ hunks in scope,   │
+│          │                                  │ approve / request │
+└──────────┴──────────────────────────────────┴───────────────────┘
 ```
+
+Widescreens have spare **width**. The graph keeps the full height under
+the filter strip. Title, reading tools, and the change live in one right
+pane (~480px, resizable 380–720). There is no bottom reel and no window
+footer; keyboard hints sit as a thin strip at the foot of that pane.
 
 ### Top bar
 
-Brand mark (eye) + “Eagle Eye”. Status dot and line. Staged-remark chip
+Brand mark (quiet constellation) + “Deepfield”. Status dot and line. Staged-remark chip
 when anything is staged. Review progress for **every file on every
 review path** (not the filtered file list). `?` opens the legend. No
 avatar, no extra nav.
@@ -176,15 +195,16 @@ Collapsible, resizable. No walk headline, no assumed service flow, no
 - **progress** — reviewed files / files on that path.
 
 Do not list services or `from {repo}` on the row. Which checkouts a path
-touches becomes clear when it is selected (map + inspector). `J` / `K`
+touches becomes clear when it is selected (map + review pane). `J` / `K`
 walks the list. `P` / empty field returns the camera to the whole scene.
 
 ### Main — graph
 
-Cytoscape constellation on the Nocturne field. Territories are nebula
-blooms (layered translucent gas, no hard oval stroke). Layout slots sit
+Cytoscape constellation on the Nocturne field. Territories are galaxies
+of clustered stars (spiral / barred / elliptical, no gas wash). Layout slots sit
 on a spaced grid and do not overlap. Clusters are discs (size = behavioural weight;
-mechanical-only are hollow). Risk is a corona plus a rule chip. The
+mechanical-only are hollow). Risk is heat on the body (fill + corona),
+not a rule chip. The
 selected review path is lit; other paths recede. Cross-service and
 contract edges arc between clusters at overview. Wheel / pinch zoom
 toward the cursor; more detail in. Clicking empty field returns to the
@@ -195,39 +215,56 @@ zoom out, frame the current scope, fit the whole scene. The LOD readout
 lives under that stack. This is map instrumentation (glass, hairline,
 mono), not a FAB and not chrome that covers the constellation.
 
-### Right pane — inspector
+### Right pane — review
 
-Collapsible, resizable. Title, facts, risk hits (or an explicit **no
-risks** state), in-scope files grouped by cluster. No composer here —
-remarks are staged on the reel.
+Collapsible, resizable. This is inspector and change reviewer in one
+column. The hunks are the pane. Chrome stays two short, fixed-height
+rows:
 
-### Bottom — change reel
+1. **Title bar** — kicker, name, then summary and services on the same
+   strip (truncated). Collapse control. No facts definition list, no
+   risk-hit cards, no “edges from here” list (the map already shows
+   edges).
+2. **Reading tools** — one row: previous / next, `n / N`, mark reviewed,
+   remark / request changes / approve. This row does **not** include the
+   current file path. Path length must not change the control size.
+   `n / N` is tabular and fixed-width.
 
-The reel is **the current review context**, not a dump of the whole
-change with other files folded. Context is whichever of these you are
-on:
+The reading cursor and the hunk list stay in sync. `↑` `↓` (and the
+prev / next pills) scroll the current file to the top of the hunk list.
+Scrolling the hunk list, or clicking a file header, sets the cursor to
+the file whose header is pinned.
+
+Below: **the current review context** — files and hunks for whichever
+of these you are on:
 
 - a **review path** — files in every cluster on that path
 - a **service** — files in that checkout
 - a **cluster** — files in that cluster
 - an **edge** — the two endpoint files
 
-Left: that context, reading cursor, mark reviewed. Right: those files
-with hunks. Do not list files from other steps or services as “N lines
-collapsed”. Include-class chips still hide classes; they are not a
-stand-in for context.
+Do not also list those files as a second tree in the title bar. Do
+not list files from other steps or services as “N lines collapsed”.
+Include-class chips still hide classes; they are not a stand-in for
+context.
+
+Rule hits sit as **one-word chips on the file row** that holds the
+evidence (title and excerpt on hover). Files with no hit have no chip.
 
 Each hunk line stays a clickable row (unified diff: marker, line
 number, code). Syntax colour is **Shiki tokens** on the code after the
 marker. Add and delete are the line class (background), not a diff
-widget, Monaco, or a side-by-side editor.
+widget, Monaco, or a side-by-side editor. Long lines do not widen the
+pane or wrap. The hunk scrolls horizontally as a unit; marker and line
+number stay pinned. Add / delete tint is the hunk width, not the length
+of that line.
 
 Click a line to remark (shift-click extends). `↑` `↓` move the cursor
 inside the context. `R` marks reviewed. Space marks and advances.
 
-Terminal actions on the reel chrome: **Approve** and **Request changes**.
-Request changes submits staged remarks to the inbox. Approve writes a
-verdict and refuses if remarks are still staged.
+**Approve** and **Request changes** sit on this pane. Request changes
+submits staged remarks to the inbox. Approve writes a verdict and
+refuses if remarks are still staged.
 
 ### No
 
@@ -246,11 +283,12 @@ verdict and refuses if remarks are still staged.
 ### Service territory
 
 - Named in small caps or a restrained mono, not a huge title card
-- Shape is a nebula bloom: several soft lobes, low-alpha additive gas,
-  gone at the rim — not an opaque sphere or a hard oval
-- Layout centres stay on a spaced grid so neighbouring blooms do not merge
-- Clicking the hull (not a cluster) focuses the service: inspector lists
-  its clusters; path still global
+- Shape is a galaxy of stars: spiral, barred, or elliptical cluster,
+  hashed from the service id — not an opaque sphere, a hard oval, or a
+  fog bloom
+- Layout centres stay on a spaced grid so neighbouring galaxies do not merge
+- Clicking the hull (not a cluster) focuses the service: the review pane
+  lists its clusters; path still global
 
 ### Cluster
 
@@ -283,68 +321,69 @@ mystery.
 
 ### Risk
 
-- Corona + rule chip on the cluster. Chips are one-word labels (`Retry`,
-  `Money`, `Contract`), not numbered ids. The full rule title is on hover
-  and spelled out in the inspector.
-- Inspector lists hits **in the current scope**: one-word label, title,
-  severity, evidence path, excerpt. A rule may fire across the vertical
-  change; selecting a review path, cluster, file, or edge only shows
-  evidence files that sit in that scope. Other evidence stays on its
-  own path.
-- Colour is allowed (high = hot, medium = amber, none = cool) **and**
-  shape/brightness. Colour-only is a fail
+- **Heat on the body**, not a rule chip on the map. Fill + corona
+  encode how much in-scope evidence sits in that cluster (count of
+  evidence files, high weighted over medium). Cool = none, amber =
+  medium, hot = high. Brighter / larger corona = more hits. Colour and
+  corona together; colour-only is a fail.
+- Rule names stay on the path rail and as chips on the file that holds
+  the evidence. The map does not draw `Retry` / `Money` chips.
+- Hits are **in the current scope**: one-word chip on that file; title
+  and excerpt on hover. A rule may fire across the vertical change;
+  selecting a review path, cluster, file, or edge only chips evidence
+  files that sit in that scope. Other evidence stays on its own path.
 - No skull icons, no emoji, no “CRITICAL!!!” banners
 
 ---
 
-## 6. Inspector
+## 6. Review pane
 
-Always the same skeleton: **title, facts, in-scope files**. Remarks are
-not composed here — they stage on the reel.
+Always the same skeleton: **compact title, then the hunks**. Remarks
+stage on the hunks and the scope composer in this pane. Rule chips live
+on the sticky file header, not in a hit list above the diff.
 
 ### Cluster
 
-- Title (path prefix), service, template summary, one-word rule chips
-- Risk hits: evidence files in this cluster, or an explicit **no risks** empty
-- Edges in / out, especially `crossService`
-- Member files grouped by cluster (sorted as in the graph document)
+- Title (path prefix); service and template summary in the title bar
+- Member files as sticky headers over their hunks (sorted as in the
+  graph document), with chips for evidence in that file
 
 ### File
 
-- `repo/path`, class, change kind, parent cluster
-- Hits that cite this file
-- No hunk preview here; the reel owns the diff
+- Filename in the title bar; `repo/path` on the sticky header
+- Hits that cite this file as chips under that path
+- Hunks for that file in the same pane
 
 ### Edge
 
-- Kind, from → to, cross-service or not
-- Hits whose evidence is an endpoint file
+- Kind and from → to in the title bar; cross-service or not in the meta
+- Hits whose evidence is an endpoint file as chips on those headers
+- Endpoint hunks below
 
 ### Review path
 
-- Hotspot name, summary, services, rule chips for rules that fire on
-  this path
-- Risk hits: **only evidence files on this path**. Do not unroll the
+- Hotspot name; summary and services in the title bar
+- Risk chips: **only on evidence files on this path**. Do not unroll the
   rest of a multi-cluster rule.
-- In-scope files grouped by cluster
+- In-scope files as the hunk list, grouped by cluster headers
 
-Facts come from `graph.json`. The inspector does not invent summaries.
-If a template line exists in the document, show it; do not have the UI
-ask a model.
+Title-bar copy comes from `graph.json`. The pane does not invent
+summaries. If a template line exists in the document, show it; do not
+have the UI ask a model.
 
 ---
 
 ## 7. Remarks, review, and apply
 
-Remarks **stage locally**, then flush to `.eagle-eye/inbox.json`. Nothing
+Remarks **stage locally**, then flush to `.deepfield/inbox.json`. Nothing
 reaches the agent until Request changes (or an explicit submit of the
 staged set).
 
 ### Scope
 
 A remark is written against a **scope key**: one review path, one service, one
-cluster, one edge, one file, or a line range. The reel and inspector only
-show remarks whose scope key matches the scope the reviewer is in now.
+cluster, one edge, one file, or a line range. The review pane only
+shows remarks whose scope key matches the scope the reviewer is in now.
 
 ### Anchors
 
@@ -362,7 +401,7 @@ Every remark shows author and timestamp.
 ### Reviewed
 
 `R` / the tick marks a file reviewed. The tick is centred in its box.
-Each file’s header sticks to the top of the reel until that file’s hunks
+Each file’s header sticks to the top of the hunk list until that file’s hunks
 have scrolled away — headers do not stack on top of each other. Counts
 in the top bar and review paths use the **unfiltered files**. A new
 `graph.json` (new fingerprint) invalidates reviewed state. Filters never
@@ -385,7 +424,7 @@ the left, the remark on the right.
 
 | Remark kind | Inline target |
 | --- | --- |
-| line / lines | file path plus the hunk excerpt, marked lines picked, syntax-coloured like the reel |
+| line / lines | file path plus the hunk excerpt, marked lines picked, syntax-coloured like the review pane |
 | file | file path, class, change, hunk (capped) |
 | cluster | title, service, summary, member files |
 | edge | kind, from → to, cross-service or not, endpoint hunks when the ends are files |
@@ -402,7 +441,7 @@ Submit flushes the staged set to the inbox.
 - **Approve** — writes `verdict: approve`. Blocked while remarks are
   still staged.
 
-The skill loop is still apply. Eagle Eye does not click GitHub Approve.
+The skill loop is still apply. Deepfield does not click GitHub Approve.
 
 ---
 
@@ -419,7 +458,7 @@ Include chips on the strip under the top bar, not a settings modal.
 | generated | `noise.generated`, `noise.lock`, `noise.format`, `noise.pin`, `noise.deps`, `noise.fixture` |
 
 Default: every bucket included. `F` hides all but behavioural. Hits stay
-visible. A hidden class leaves the reel and the bloom; the cluster stays
+visible. A hidden class leaves the hunk list and the territory; the cluster stays
 if any visible member or any hit remains. Progress still uses the full
 path.
 
@@ -453,10 +492,13 @@ Budget: short, spatial, the same every time.
 - Settlement and camera ease: ~400–700ms, ease-in-out
 - Path draw (first load only, or when the path set changes): once
 - Pin appear: small scale-in
-- No idle particle drift, no pulsing of the whole field, no layout
-  that keeps solving while the user is idle
-- Reduced motion: jump-cut camera, skip path draw, skip bloom
-  animation. The map must still be fully usable
+- Quiet star twinkle: a handful of near-field stars, long period, low
+  amplitude. **Parallax** is the star motion: far/mid/near depths track
+  pan (and a little of zoom) at different rates. No idle particle drift,
+  no pulsing of the whole field, no layout that keeps solving while the
+  user is idle
+- Reduced motion: jump-cut camera, skip path draw, skip star twinkle
+  **and star parallax**. The map must still be fully usable
 
 Layout solvers must stop. A graph that breathes forever looks alive and
 reads as noise.
@@ -521,10 +563,10 @@ rings. Do not use non-focusable divs as buttons.
 | --- | --- |
 | generate failed | still field, status `generate failed`, one line |
 | empty change | still field, `no change to review` |
-| no risks | inspector: explicit empty, not a blank list |
-| binary file | reel: `binary file — no text diff` |
-| diff too large | reel: `diff too large to display` plus size |
-| no hunk | reel: `diff not captured by the run` |
+| no risks | file rows have no rule chips |
+| binary file | hunks: `binary file — no text diff` |
+| diff too large | hunks: `diff too large to display` plus size |
+| no hunk | hunks: `diff not captured by the run` |
 
 ---
 
@@ -567,7 +609,7 @@ chrome from a UI kit. See `AGENTS.md`.
 The UX is right when:
 
 1. The opening settlement makes the cross-service story obvious before
-   the inspector is used.
+   the review pane is used.
 2. Walking the path with `J`/`K` is enough for a first pass.
 3. A comment on a cross-service edge is three keys away from a focused
    target, and the pin stays on that edge through regenerate if the
@@ -583,8 +625,6 @@ The UX is right when:
 1. **Hue per service vs one cool field.** One field is calmer; per-service
    hue helps meta-repos. Proposed: one field, territory hulls labelled,
    accent only on path/selection/risk.
-2. **Hunk preview in inspector.** How much diff in v1 — first 40 lines,
-   or “open in editor” only?
-3. **Legend.** Always a faint corner key, or `?` only?
-4. **3D.** Keep as a later camera, or is top-down 2D the entire visual
+2. **Legend.** Always a faint corner key, or `?` only?
+3. **3D.** Keep as a later camera, or is top-down 2D the entire visual
    identity if it already reads as a constellation?

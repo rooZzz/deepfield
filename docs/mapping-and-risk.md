@@ -50,9 +50,9 @@ are hashes, the hashed payload is itself sorted.
 All paths are under the workspace root, gitignored:
 
 ```text
-.eagle-eye/graph.json     generator output; web app reads
-.eagle-eye/inbox.json     web app writes remarks + verdict; agent watches
-.eagle-eye/review.json    reviewed file ids keyed by graph fingerprint
+.deepfield/graph.json     generator output; web app reads
+.deepfield/inbox.json     web app writes remarks + verdict; agent watches
+.deepfield/review.json    reviewed file ids keyed by graph fingerprint
 ```
 
 `inbox.json` is the only channel from the UI back to the agent. The web app

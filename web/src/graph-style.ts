@@ -30,15 +30,15 @@ export const graphStyle: StylesheetJson = [
     style: {
       shape: "ellipse",
       "background-fill": "radial-gradient",
-      "background-gradient-stop-colors": "#f0f2fa #7a8198",
+      "background-gradient-stop-colors": "#9aa3b8 #4a5164",
       "background-gradient-stop-positions": "0% 70%",
       width: "data(size)",
       height: "data(size)",
       "border-width": 0,
       "text-opacity": 0,
-      "underlay-opacity": 0.16,
-      "underlay-color": "#c5c9d8",
-      "underlay-padding": 7,
+      "underlay-opacity": "data(glow)",
+      "underlay-color": "#6b7388",
+      "underlay-padding": "data(halo)",
       "underlay-shape": "ellipse",
       "z-index": 8,
       label: "data(label)",
@@ -58,19 +58,20 @@ export const graphStyle: StylesheetJson = [
   {
     selector: "node.risk-high",
     style: {
-      "background-gradient-stop-colors": "#e0c4b8 #8d7b74",
-      "underlay-opacity": 0.32,
-      "underlay-color": "#c58a72",
-      "underlay-padding": 7,
+      "background-gradient-stop-colors": "#ffd2b6 #c45c3e",
+      "underlay-opacity": "data(glow)",
+      "underlay-color": "#e08962",
+      "underlay-padding": "data(halo)",
       "underlay-shape": "ellipse",
     },
   },
   {
     selector: "node.risk-med",
     style: {
-      "underlay-opacity": 0.22,
-      "underlay-color": "#b9a06a",
-      "underlay-padding": 5,
+      "background-gradient-stop-colors": "#f0d78a #a07a38",
+      "underlay-opacity": "data(glow)",
+      "underlay-color": "#d4b05a",
+      "underlay-padding": "data(halo)",
       "underlay-shape": "ellipse",
     },
   },
@@ -108,6 +109,18 @@ export const graphStyle: StylesheetJson = [
       "background-opacity": 0,
       "border-width": 1,
       "border-color": "#cf8f83",
+    },
+  },
+  {
+    selector: "node.file-high",
+    style: {
+      "background-color": "#e08962",
+    },
+  },
+  {
+    selector: "node.file-med",
+    style: {
+      "background-color": "#d4b05a",
     },
   },
   {

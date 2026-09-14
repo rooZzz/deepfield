@@ -1,9 +1,9 @@
 import { requireEl } from "./dom.ts";
 import { CAMERA } from "./graph-elements.ts";
 import { bindKeys } from "./keys.ts";
-import type { PaintFns } from "./paint.ts";
-import { paint } from "./paint.ts";
-import { dragReel } from "./resize.ts";
+import { fileAtViewport, reelScrollIgnored } from "./reel-cursor.ts";
+import { paint, type PaintFns } from "./paint.ts";
+import { dragIns } from "./resize.ts";
 import { app, graphView } from "./state.ts";
 
 export function bindUi(fns: PaintFns, requestChanges: () => void, approve: () => void): void {
@@ -11,10 +11,11 @@ export function bindUi(fns: PaintFns, requestChanges: () => void, approve: () =>
     app.legend = !app.legend;
     paint(fns);
   });
-  requireEl("#reel-toggle").addEventListener("click", () => {
-    app.reelOpen = !app.reelOpen;
+  requireEl("#ins-fold").addEventListener("click", () => {
+    app.insOpen = true;
     paint(fns);
   });
+  requireEl("#ins-grip").addEventListener("pointerdown", (event) => dragIns(event));
   requireEl("#remark-scope").addEventListener("click", () => {
     app.pending = { kind: "scope-compose" };
     app.draft = "";
@@ -22,7 +23,6 @@ export function bindUi(fns: PaintFns, requestChanges: () => void, approve: () =>
   });
   requireEl("#request-changes").addEventListener("click", () => void requestChanges());
   requireEl("#approve").addEventListener("click", () => void approve());
-  requireEl("#reel-grip").addEventListener("pointerdown", (event) => dragReel(event));
   requireEl("#cam-in").addEventListener("click", () => graphView?.zoomBy(CAMERA.step));
   requireEl("#cam-out").addEventListener("click", () => graphView?.zoomBy(1 / CAMERA.step));
   requireEl("#cam-frame").addEventListener("click", () => {
@@ -30,6 +30,15 @@ export function bindUi(fns: PaintFns, requestChanges: () => void, approve: () =>
     graphView?.frame(false);
   });
   requireEl("#cam-fit").addEventListener("click", fns.wholePath);
+  requireEl("#reel-scroll").addEventListener("scroll", () => {
+    if (reelScrollIgnored()) {
+      return;
+    }
+    const id = fileAtViewport(requireEl("#reel-scroll"));
+    if (id && id !== app.cursorId) {
+      fns.setCursor(id, false);
+    }
+  }, { passive: true });
   bindKeys({
     path: (d) => fns.goStep(app.pathIndex + d),
     cursor: fns.moveCursor,

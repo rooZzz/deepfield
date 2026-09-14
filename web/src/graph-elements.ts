@@ -1,7 +1,8 @@
 import type { ElementDefinition } from "cytoscape";
 import type { ClusterNode, FileNode, GraphDocument } from "../../src/types.ts";
 import { bucketOf, type BucketId } from "./buckets.ts";
-import { behaviouralWeight, clusterOfFile, clusterSeverity, clusters, files, services } from "./model.ts";
+import { behaviouralWeight, clusterOfFile, clusters, files, services } from "./model.ts";
+import { clusterHeat, clusterTone, fileTone, heatGlow } from "./heat.ts";
 
 const SPACE = 1000;
 const SERVICE = 300;
@@ -28,11 +29,12 @@ export function toElements(graph: GraphDocument, hidden: BucketId[]): ElementDef
   for (const cluster of clusters(graph)) {
     const p = scale(graph.positions[cluster.id]);
     const weight = behaviouralWeight(graph, cluster);
-    const sev = clusterSeverity(graph, cluster.id);
+    const tone = clusterTone(graph, cluster.id);
+    const glow = heatGlow(clusterHeat(graph, cluster.id), tone);
     const station = graph.paths.findIndex((ids) => ids.includes(cluster.id));
     const classes = [
       weight === 0 ? "hollow" : "",
-      sev === "high" ? "risk-high" : sev === "medium" ? "risk-med" : "",
+      tone === "high" ? "risk-high" : tone === "medium" ? "risk-med" : "",
     ].filter(Boolean).join(" ");
     elements.push({
       data: {
@@ -42,6 +44,8 @@ export function toElements(graph: GraphDocument, hidden: BucketId[]): ElementDef
         repo: cluster.repo,
         size: 10 + weight * 4,
         station: station >= 0 ? station + 1 : 0,
+        glow: glow.glow,
+        halo: glow.halo,
       },
       position: p,
       classes,
@@ -93,6 +97,7 @@ function placeFiles(
     .filter((file): file is FileNode => Boolean(file) && !hidden.includes(bucketOf(file)));
   members.forEach((file, index) => {
     const angle = (index / Math.max(members.length, 1)) * Math.PI * 2 - Math.PI / 2;
+    const tone = fileTone(graph, file.id);
     elements.push({
       data: {
         id: file.id,
@@ -104,7 +109,10 @@ function placeFiles(
         x: origin.x + Math.cos(angle) * FILE_R,
         y: origin.y + Math.sin(angle) * FILE_R,
       },
-      classes: file.change === "delete" ? "file-del" : "",
+      classes: [
+        file.change === "delete" ? "file-del" : "",
+        tone === "high" ? "file-high" : tone === "medium" ? "file-med" : "",
+      ].filter(Boolean).join(" "),
       grabbable: false,
     });
   });

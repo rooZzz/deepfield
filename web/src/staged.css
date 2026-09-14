@@ -89,7 +89,7 @@
 .ctx-head { padding: 0 var(--space-6) var(--space-3); }
 .ctx-head .mono { font-size: 12px; }
 .ctx-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 var(--space-6) var(--space-3); }
-.ctx-list { padding: 0 var(--space-6); display: flex; flex-direction: column; gap: 3px; }
+.ctx-list { padding: 0 var(--space-6); display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .ctx-file { font-size: 11px; color: var(--color-neutral-300); }
 .staged-ctx .hunk-line:hover { background: transparent; }
 .staged-ctx .hunk-line.add:hover { background: rgba(143, 191, 152, 0.07); }

@@ -4,7 +4,7 @@ import { canonicalJson } from "./hash.ts";
 import type { GraphDocument, InboxDocument, ReviewDocument } from "./types.ts";
 
 export function sessionDir(root: string): string {
-  return path.join(root, ".eagle-eye");
+  return path.join(root, ".deepfield");
 }
 
 export function graphPath(root: string): string {
@@ -34,7 +34,7 @@ export async function readInbox(root: string): Promise<InboxDocument> {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       return { version: 1, items: [] };
     }
-    throw new Error("Failed to read Eagle Eye inbox", { cause: error });
+    throw new Error("Failed to read Deepfield inbox", { cause: error });
   }
 }
 
@@ -51,7 +51,7 @@ export async function readReview(root: string): Promise<ReviewDocument> {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       return { version: 1, graphId: "", reviewed: [] };
     }
-    throw new Error("Failed to read Eagle Eye review state", { cause: error });
+    throw new Error("Failed to read Deepfield review state", { cause: error });
   }
 }
 

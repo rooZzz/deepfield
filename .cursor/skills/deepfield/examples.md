@@ -2,7 +2,7 @@
 
 ## Invoke
 
-User: "Review this vertical change with Eagle Eye."
+User: "Review this vertical change with Deepfield."
 
 1. `generate --root` on the meta-repo (cwd if already there)
 2. `serve --root` and tell the user the local URL

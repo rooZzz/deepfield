@@ -1,3 +1,32 @@
+#stage {
+  flex: 1 1 auto;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  background:
+    radial-gradient(70% 50% at 18% 28%, rgba(70, 48, 120, 0.16), transparent 58%),
+    radial-gradient(55% 45% at 84% 74%, rgba(28, 52, 92, 0.2), transparent 55%),
+    radial-gradient(120% 90% at 50% 40%, #0c0e1800 0%, #070810 72%, #05060c 100%),
+    #05060c;
+  overflow: hidden;
+}
+#galaxies, #field, #cy, #map-hud, #stars { position: absolute; inset: 0; }
+#field { z-index: 1; }
+#stars {
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+#stars canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+#galaxies { pointer-events: none; z-index: 1; }
+#cy { z-index: 2; background: transparent; }
+#cy canvas { background: transparent; }
+#map-hud { pointer-events: none; overflow: hidden; z-index: 3; }
+#map-hud button { pointer-events: auto; }
 #map-controls {
   position: absolute;
   left: var(--space-4);

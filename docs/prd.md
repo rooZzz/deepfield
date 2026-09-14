@@ -1,4 +1,4 @@
-# Eagle Eye — Product Requirements (draft v0.5)
+# Deepfield — Product Requirements (draft v0.5)
 
 **Status:** draft for refinement. Not an implementation spec yet.
 **Proposition:** review the change, not the diff.
@@ -6,7 +6,7 @@
 This document captures the product we want to build: a Cursor agent skill plus
 a bundled web app that maps a vertical change as a clustered graph. The
 primary workspace is a **meta-repo of git submodules used as a local view**
-over several services. One feature becomes several PRs; Eagle Eye reviews
+over several services. One feature becomes several PRs; Deepfield reviews
 that feature end to end as one map. The skill **generates a deterministic
 graph, boots the web app, and watches one inbox file** for comments; on
 change it applies those comments into the checkouts and generates again.
@@ -67,7 +67,7 @@ A constellation of change: a visual map of what moved in this vertical
 feature, how those pockets connect across services, and where the risk sits.
 
 - **One feature, one map.** Several submodule PRs are slices of one change.
-  Eagle Eye reviews the union.
+  Deepfield reviews the union.
 - **Clusters, not files.** A 70-file / 4-repo change becomes a handful of
   named nodes (for example “payment retry”, “order contract”, “checkout
   wiring”).
@@ -82,7 +82,7 @@ feature, how those pockets connect across services, and where the risk sits.
   file. Comments land there. On change: apply into checkouts, generate
   again. The map is not a slideshow and the agent is not polling the UI.
 - **Ship path unchanged.** Each service still lands as its own PR. Hosts
-  still own approval, required checks, and merge. Eagle Eye owns the e2e
+  still own approval, required checks, and merge. Deepfield owns the e2e
   review and the apply-into-working-trees loop.
 
 ---
@@ -99,13 +99,13 @@ feature, how those pockets connect across services, and where the risk sits.
 - Map and score risk **only** by the published rules in
   `docs/mapping-and-risk.md`.
 - Render a **visually impressive 2D constellation** per [ux.md](ux.md):
-  nebula territories, clusters as bodies of light, risk as flare plus
+  galaxy territories, clusters as bodies of light, risk as flare plus
   rule id, review path as a walkable route. Quiet chrome, loud map.
 - Show **interconnects across services** and **review paths** that can
   each cross repo boundaries.
 - Keep **semantic filters** first-class, using the same file classes as the
   generator (`noise.*`, `mechanical.*`, `behavioural`).
-- Skill loop: **generate + boot**, then **watch `.eagle-eye/inbox.json`**;
+- Skill loop: **generate + boot**, then **watch `.deepfield/inbox.json`**;
   on change, apply comments into the right checkouts and generate again.
 
 ### Non-goals (v1)
@@ -134,7 +134,7 @@ feature, how those pockets connect across services, and where the risk sits.
 | Cursor agent | User invokes the skill | Generate graph; boot web app; watch inbox; apply; generate again |
 
 Primary trigger: the Cursor workspace is (or contains) the meta-repo, and the
-user invokes Eagle Eye. From then on the inbox file is the comment channel.
+user invokes Deepfield. From then on the inbox file is the comment channel.
 
 ---
 
@@ -151,13 +151,13 @@ checkouts that belong to one feature. It is not:
 
 It *is* what you would describe as “this feature, as it exists on disk right
 now.” Host PRs are **slices** of that change. Each slice still lands and is
-approved in its own repo. Eagle Eye maps the whole, and writes applied
+approved in its own repo. Deepfield maps the whole, and writes applied
 feedback back into those same checkouts.
 
 ### 5.2 Local machine state, not pins
 
 The meta-repo is a **layout**: `.gitmodules` (and nested `.git` directories)
-tell Eagle Eye which service checkouts live where.
+tell Deepfield which service checkouts live where.
 
 The change itself is derived from **each checkout’s local git state**:
 
@@ -166,7 +166,7 @@ The change itself is derived from **each checkout’s local git state**:
 - staged and unstaged working tree
 
 Parent gitlinks are **out of band** during active work. They are housekeeping
-after merge (“re-pin meta-repo to latest main on each submodule”). Eagle Eye
+after merge (“re-pin meta-repo to latest main on each submodule”). Deepfield
 must produce a correct map while those pointers still name old mains.
 
 Do not wait for `git add submodule && git commit` in the parent. Do not treat
@@ -187,7 +187,7 @@ layout → per-checkout delta → file nodes → file class
        → import/contract edges → per-service clusters
        → risk hits (named rules + evidence)
        → review paths (connected walks on interconnects)
-       → write .eagle-eye/graph.json
+       → write .deepfield/graph.json
 ```
 
 Two generates of the same tree must be materially identical (same nodes,
@@ -203,8 +203,8 @@ The agent does **not** map the change and does **not** define risk.
 
 The skill is this loop:
 
-1. **Generate** `.eagle-eye/graph.json` and **boot** the web app on it.
-2. **Listen** to `.eagle-eye/inbox.json`. That file is where the web app
+1. **Generate** `.deepfield/graph.json` and **boot** the web app on it.
+2. **Listen** to `.deepfield/inbox.json`. That file is where the web app
    sends user comments.
 3. When the inbox file changes: **apply** pending comments as edits in the
    named checkout(s), write status back onto the items, **generate again**.
@@ -252,7 +252,7 @@ their risk badges.
 ### 5.8 Feedback, inbox, apply
 
 The map is not read-only. The web app writes **feedback items** to
-`.eagle-eye/inbox.json`, attached to graph targets (cluster, file, edge,
+`.deepfield/inbox.json`, attached to graph targets (cluster, file, edge,
 path, risk hit, service).
 
 That file is the comment channel. The skill’s second job is: **watch it**.
@@ -281,17 +281,17 @@ e2e channel.
 
 ## 6. Product surface
 
-Eagle Eye is **one project** with two surfaces and a **file protocol**:
+Deepfield is **one project** with two surfaces and a **file protocol**:
 
 1. **Cursor agent skill** — a strict loop, not a free-form “review this”:
    - generate change graph
    - boot web app
-   - listen for changes to `.eagle-eye/inbox.json`
+   - listen for changes to `.deepfield/inbox.json`
    - on change: apply comments, generate again
 2. **Bundled web app** — reads `graph.json`, writes comments to
    `inbox.json`. It never maps, never scores risk, never patches services.
 
-Session dir (gitignored): `.eagle-eye/graph.json`, `.eagle-eye/inbox.json`.
+Session dir (gitignored): `.deepfield/graph.json`, `.deepfield/inbox.json`.
 
 ### Skill (normative)
 
@@ -299,7 +299,7 @@ When invoked, the agent must:
 
 ```text
 generate change graph and boot webapp
-listen for changes to .eagle-eye/inbox.json
+listen for changes to .deepfield/inbox.json
   — that is where the user's comments will be sent
   — when that file changes: make the changes, then regenerate the graph
 ```
@@ -312,12 +312,13 @@ one path. The agent does not invent a second channel.
 
 Normative UI is [ux.md](ux.md). In short:
 
-- Full-viewport **app shell**: top bar, left path, centre graph, right
-  inspector, bottom selection + diff.
+- Full-viewport **app shell**: top bar, left path, centre graph (full
+  height), right review pane (compact title + hunks).
 - Path rail + keyboard walk (`J`/`K`) is the primary review gesture.
-- Inspector on focus; comments submit to `.eagle-eye/inbox.json`.
+- Inspector on focus; comments submit to `.deepfield/inbox.json`.
 - Layout is a pure function of graph ids (no shuffle on regenerate).
-- Status strip for generate / watch / apply. Hits always stay visible.
+- Status strip for generate / watch / apply. Hits stay on the file that
+  holds the evidence.
 
 ---
 
@@ -329,11 +330,12 @@ spec: [ux.md](ux.md).
 - Service territories → clusters (bodies) → files on expand.
 - Cross-service and contract edges as high arcs; each review path as a
   route on the map.
-- Risk: corona + rule chip, never colour alone.
+- Risk: fill + corona heat from in-scope evidence, never colour alone.
+  Rule chips stay in the inspector and path rail, not on the map.
 - Size from behavioural weight. Positions from ids (stable across generate).
-- App shell: top bar, left review path, centre graph, right inspector,
-  bottom selection + diff. Graph is never covered by floating chrome
-  (path rail, inspector, FABs). Staged-remark review is a full-viewport
+- App shell: top bar, left review path, centre graph (full height),
+  right review pane (compact title + hunks). Graph is never covered by floating chrome
+  (path rail, review pane, FABs). Staged-remark review is a full-viewport
   sheet, not a dialog on the map.
 
 Literal 3D is a later camera on the same scene (`ux.md` §16). Do not block
@@ -421,7 +423,7 @@ Precision can improve later. Missing an edge is better than guessing.
 | F1 | Discover nested checkouts from local layout (`.gitmodules` + on-disk git) | P0 |
 | F2 | Compute each checkout’s local delta vs its own base; union into one change | P0 |
 | F3 | Do not use parent submodule pins as the primary change set | P0 |
-| F4 | Emit canonical `.eagle-eye/graph.json` (sorted ids; schema versioned) | P0 |
+| F4 | Emit canonical `.deepfield/graph.json` (sorted ids; schema versioned) | P0 |
 | F5 | Generator implements `docs/mapping-and-risk.md` with no model in the loop | P0 |
 | F6 | Same tree → materially identical graph (tested, including shuffled walks) | P0 |
 | F7 | Risk hits only from named rules with evidence; each review path is a connected walk on interconnects | P0 |
@@ -453,14 +455,14 @@ Precision can improve later. Missing an edge is better than guessing.
 ## 10. Architecture (intended)
 
 ```text
-generate (Node, rules) ──► .eagle-eye/graph.json
+generate (Node, rules) ──► .deepfield/graph.json
                               │
                               ▼
                          boot web app
                               │
                          user comments
                               ▼
-                    .eagle-eye/inbox.json  ◄── watch
+                    .deepfield/inbox.json  ◄── watch
                               │
                               ▼
               agent apply ──► checkout working trees
@@ -515,7 +517,7 @@ Agree product shape, local-state ingest, and skill+app split.
 
 ### Phase 1 — generator + golden graphs
 
-- Graph JSON schema; `.eagle-eye/` session files
+- Graph JSON schema; `.deepfield/` session files
 - Layout + per-checkout delta + mapping/risk rules
 - Tests: stale pins, byte-stable generate, payment-retry rule hits
 
@@ -543,7 +545,7 @@ Agree product shape, local-state ingest, and skill+app split.
 
 Answer these before Phase 1 hardens.
 
-1. **Skill location.** Personal (`~/.cursor/skills/eagle-eye`) vs project
+1. **Skill location.** Personal (`~/.cursor/skills/deepfield`) vs project
    skill that ships in this repo for others to copy?
 2. **Membership when several features share a view.** Default is “every
    checkout with a local delta.” Do we need v1 filters (shared branch
@@ -565,8 +567,9 @@ Answer these before Phase 1 hardens.
    Proposed: yes — v1 is already a top-down constellation.
 9. **Hue per service.** See `docs/ux.md` §16. Proposed: one cool field,
    accent only on path / selection / risk.
-10. **Name in UI.** Product name **Eagle Eye**; npm/package `eagle-eye`;
-    skill name `eagle-eye`. Any objection to the space in the prose name?
+10. **Name in UI.** Product name **Deepfield**; npm/package `deepfield`;
+    skill name `deepfield`. On-disk folder and GitHub remote may still
+    be `eagle-eye`.
 11. **Sibling folders without `.gitmodules`.** Same ingest if the workspace
     is just a directory of cloned repos? Proposed: yes, if they are nested
     git roots, because the product cares about local checkouts, not the
@@ -585,19 +588,21 @@ Answer these before Phase 1 hardens.
 
 | Decision | Choice |
 | --- | --- |
-| Project name | `eagle-eye` (`~/dev/eagle-eye`) |
+| Product name | Deepfield |
+| Package / skill | `deepfield` |
+| Repo folder | `eagle-eye` (`~/dev/eagle-eye`); GitHub remote unchanged |
 | Version control | git |
 | Runtime | Node (TypeScript, ESM) |
 | Surfaces | Cursor agent skill + bundled web app |
 | Code style | Simple, industry-standard; see `AGENTS.md` |
 | Graph authorship | Deterministic generator; see `docs/mapping-and-risk.md` |
 | Agent role | Orchestrate loop + apply inbox comments as code edits |
-| Skill loop | Generate + boot; watch `.eagle-eye/inbox.json`; apply; generate |
-| Comment channel | `.eagle-eye/inbox.json` only |
+| Skill loop | Generate + boot; watch `.deepfield/inbox.json`; apply; generate |
+| Comment channel | `.deepfield/inbox.json` only |
 | Risk | Named rules with evidence; no model scoring |
 | Default visualisation | 2D constellation; see `docs/ux.md` |
 | UI bar | Aerial map, not a file list or graph-library demo |
-| Relationship to GitHub/GitLab | Hosts own approval, checks, merge; Eagle Eye owns e2e review + apply |
+| Relationship to GitHub/GitLab | Hosts own approval, checks, merge; Deepfield owns e2e review + apply |
 | Tagline | Review the change, not the diff |
 | Primary workspace | Meta-repo of service checkouts (git submodules as a view) |
 | Unit of review | Vertical change (union of local nested deltas), not one PR |

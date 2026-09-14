@@ -23,12 +23,11 @@ export const app = {
   popover: false,
   railOpen: true,
   insOpen: true,
-  reelOpen: true,
   railW: 250,
-  insW: 344,
-  reelH: 280,
+  insW: 480,
   statusLine: "",
   overview: true,
+  revealCursor: false,
 };
 
 export let graphView: GraphView | null = null;
