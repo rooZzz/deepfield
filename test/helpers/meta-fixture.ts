@@ -12,7 +12,7 @@ export type MetaFixture = {
 };
 
 export async function buildPaymentRetryFixture(): Promise<MetaFixture> {
-  const base = await mkdtemp(path.join(tmpdir(), "eagle-meta-"));
+  const base = await mkdtemp(path.join(tmpdir(), "deepfield-meta-"));
   const origins = path.join(base, "origins");
   const root = path.join(base, "meta");
   const paymentsOrigin = path.join(origins, "payments-api");

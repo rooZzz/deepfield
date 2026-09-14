@@ -8,7 +8,7 @@ import { buildPaymentRetryFixture } from "../test/helpers/meta-fixture.ts";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const WEB = path.join(ROOT, "web");
-const repo = process.env.GITHUB_REPOSITORY?.split("/")[1] ?? "eagle-eye";
+const repo = process.env.GITHUB_REPOSITORY?.split("/")[1] ?? "deepfield";
 const base = process.env.PAGES_BASE ?? `/${repo}/`;
 
 process.env.VITE_DEEPFIELD_STATIC = "1";

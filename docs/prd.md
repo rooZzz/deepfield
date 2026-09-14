@@ -572,9 +572,8 @@ Answer these before Phase 1 hardens.
    Proposed: yes — v1 is already a top-down constellation.
 9. **Hue per service.** See `docs/ux.md` §16. Proposed: one cool field,
    accent only on path / selection / risk.
-10. **Name in UI.** Product name **Deepfield**; npm/package `deepfield`;
-    skill name `deepfield`. On-disk folder and GitHub remote may still
-    be `eagle-eye`.
+10. **Name.** Deepfield in the UI, package, skill, folder, GitHub remote,
+    and Pages path.
 11. **Sibling folders without `.gitmodules`.** Same ingest if the workspace
     is just a directory of cloned repos? Proposed: yes, if they are nested
     git roots, because the product cares about local checkouts, not the
@@ -595,7 +594,7 @@ Answer these before Phase 1 hardens.
 | --- | --- |
 | Product name | Deepfield |
 | Package / skill | `deepfield` |
-| Repo folder | `eagle-eye` (`~/dev/eagle-eye`); GitHub remote unchanged |
+| Repo folder | `deepfield` (`~/dev/deepfield`); GitHub `rooZzz/deepfield` |
 | Version control | git |
 | Runtime | Node (TypeScript, ESM) |
 | Surfaces | Cursor agent skill + bundled web app |

@@ -8,7 +8,7 @@ const run = promisify(execFile);
 export async function git(cwd: string, args: string[]): Promise<string> {
   const { stdout } = await run(
     "git",
-    ["-c", "user.name=eagle", "-c", "user.email=eagle@test", "-c", "protocol.file.allow=always", ...args],
+    ["-c", "user.name=deepfield", "-c", "user.email=deepfield@test", "-c", "protocol.file.allow=always", ...args],
     { cwd, encoding: "utf8" },
   );
   return stdout.trim();
