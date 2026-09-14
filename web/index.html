@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Eagle Eye</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/tokens.css" />
+    <link rel="stylesheet" href="/src/style.css" />
+    <link rel="stylesheet" href="/src/reel.css" />
+    <link rel="stylesheet" href="/src/staged.css" />
+    <link rel="stylesheet" href="/src/map.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header id="topbar">
+        <div class="brand">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M1.5 12s4-6.5 10.5-6.5S22.5 12 22.5 12s-4 6.5-10.5 6.5S1.5 12 1.5 12Z" stroke="var(--color-accent)" stroke-width="1.2" opacity="0.75"></path>
+            <circle cx="12" cy="12" r="3.4" stroke="var(--color-accent)" stroke-width="1.2"></circle>
+            <circle cx="12" cy="12" r="1.1" fill="var(--color-accent)"></circle>
+          </svg>
+          <p id="mark">Eagle Eye</p>
+        </div>
+        <div class="rule"></div>
+        <div class="status-row">
+          <span id="status-dot" class="dot"></span>
+          <p id="status">generating</p>
+        </div>
+        <div class="spacer"></div>
+        <button type="button" id="staged-chip" class="chip-btn" hidden>review</button>
+        <div class="progress-wrap" title="whole path, ignoring filters">
+          <span id="review-label" class="mono dim">0 / 0 reviewed</span>
+          <span class="bar"><span id="review-bar"></span></span>
+        </div>
+        <button type="button" id="legend-btn" title="? — legend">?</button>
+      </header>
+
+      <div id="filters" aria-label="include classes">
+        <span class="kicker">Include</span>
+        <div id="filter-chips"></div>
+        <span id="hidden-count" class="mono dim"></span>
+      </div>
+
+      <div id="shell">
+        <aside id="path-pane" aria-label="review path"></aside>
+        <main id="stage">
+          <div id="stars" aria-hidden="true"></div>
+          <div id="field" aria-label="change graph">
+            <canvas id="nebula" aria-hidden="true"></canvas>
+            <div id="cy"></div>
+            <div id="map-hud"></div>
+          </div>
+          <div id="map-controls" aria-label="map camera">
+            <div class="cam-stack">
+              <button type="button" id="cam-in" title="+ — zoom in" aria-label="Zoom in">+</button>
+              <button type="button" id="cam-out" title="− — zoom out" aria-label="Zoom out">−</button>
+              <button type="button" id="cam-frame" title="Enter — frame this scope" aria-label="Frame this scope">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <circle cx="7" cy="7" r="2.4" stroke="currentColor" stroke-width="1.2"></circle>
+                  <path d="M7 1.6v1.8M7 10.6v1.8M1.6 7h1.8M10.6 7h1.8" stroke="currentColor" stroke-width="1.2"></path>
+                </svg>
+              </button>
+              <button type="button" id="cam-fit" title="P — whole scene" aria-label="Fit whole scene">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M2.2 5.2V2.2h3M8.8 2.2h3v3M11.8 8.8v3h-3M5.2 11.8h-3v-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+              </button>
+            </div>
+            <p id="lod" class="mono dim">zoom</p>
+          </div>
+          <div id="veil" hidden>
+            <span class="scan"></span>
+            <p id="veil-line" class="mono">generating</p>
+          </div>
+          <div id="legend" hidden></div>
+          <p id="empty-field" class="empty" hidden>no change to review</p>
+        </main>
+        <aside id="inspector" aria-label="inspector"></aside>
+      </div>
+
+      <footer id="reel">
+        <div id="reel-grip" class="resize reel" title="Drag to resize"></div>
+        <div id="reel-meta"></div>
+        <div id="reel-body">
+          <div id="reel-head">
+            <button type="button" id="reel-toggle" aria-label="Collapse reel">▾</button>
+            <span class="kicker">Changes in scope</span>
+            <span id="reel-scope" class="accent mono"></span>
+            <span class="spacer"></span>
+            <button type="button" id="remark-scope" class="pill">remark on scope</button>
+            <button type="button" id="request-changes" class="pill">request changes</button>
+            <button type="button" id="approve" class="pill">approve</button>
+            <span id="reel-hint" class="mono dim">↑ ↓ file · space mark &amp; next · J K path</span>
+          </div>
+          <div id="reel-scroll" aria-label="diff"></div>
+        </div>
+      </footer>
+    </div>
+
+    <div id="overlay" hidden>
+      <div id="staged-panel" role="dialog" aria-modal="true" aria-labelledby="staged-title">
+        <div class="panel-head">
+          <span id="staged-title" class="kicker accent">Staged remarks</span>
+          <span id="staged-count" class="mono dim"></span>
+          <span class="spacer"></span>
+          <button type="button" id="staged-close">esc</button>
+        </div>
+        <div id="staged-list"></div>
+        <div class="panel-foot">
+          <button type="button" id="staged-submit" class="btn-primary">Submit remarks to agent</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

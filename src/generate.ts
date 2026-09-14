@@ -1,0 +1,78 @@
+import { classify } from "./classify.ts";
+import { describeDiff } from "./diff-kind.ts";
+import { clusterFiles } from "./cluster.ts";
+import { contractEdges } from "./contracts.ts";
+import { checkoutDelta } from "./git/delta.ts";
+import { discoverCheckouts } from "./git/layout.ts";
+import { sortById } from "./hash.ts";
+import { importEdges } from "./imports.ts";
+import { loadPackages } from "./packages.ts";
+import { reviewPaths } from "./path.ts";
+import { layoutPositions } from "./positions.ts";
+import { riskHits } from "./risk.ts";
+import type { FileNode, GraphDocument, ServiceNode } from "./types.ts";
+
+export async function generateGraph(root: string): Promise<GraphDocument> {
+  const checkouts = await discoverCheckouts(root);
+  const warnings: string[] = [];
+  const files: FileNode[] = [];
+  const deltas = [];
+  for (const checkout of checkouts) {
+    const delta = await checkoutDelta(checkout);
+    deltas.push(delta);
+    if (delta.warning) {
+      warnings.push(delta.warning);
+    }
+  }
+  for (const delta of deltas) {
+    const paths = new Set(delta.files.map((file) => file.path));
+    for (const changed of delta.files) {
+      if (changed.gitlink) {
+        continue;
+      }
+      const cls = classify(changed, paths);
+      const diff = describeDiff(changed.path, changed.hunk);
+      files.push({
+        id: `file:${changed.repo}:${changed.path}`,
+        kind: "file",
+        repo: changed.repo,
+        path: changed.path,
+        change: changed.change,
+        class: cls,
+        hunk: diff.hunk,
+        noDiff: diff.noDiff,
+        bytes: diff.bytes,
+      });
+    }
+  }
+  const liveFiles = sortById(files);
+  const services: ServiceNode[] = sortById(
+    [...new Set(liveFiles.map((file) => file.repo))].map((repo) => ({
+      id: `service:${repo}`,
+      kind: "service" as const,
+      repo,
+    })),
+  );
+  const packages = await loadPackages(root, checkouts);
+  const pkgLookup = new Map(
+    [...packages.entries()].map(([name, pkg]) => [name, { repo: pkg.repo, main: pkg.main }]),
+  );
+  const edges = sortById([
+    ...(await importEdges(liveFiles, root, pkgLookup)),
+    ...(await contractEdges(liveFiles, root)),
+  ]);
+  const clusters = clusterFiles(liveFiles, edges);
+  const risks = riskHits(liveFiles, edges, clusters);
+  const filesById = new Map(liveFiles.map((file) => [file.id, file]));
+  const paths = reviewPaths(clusters, edges, risks, filesById);
+  return {
+    version: 1,
+    root,
+    nodes: sortById([...services, ...clusters, ...liveFiles]),
+    edges,
+    risks,
+    paths,
+    positions: layoutPositions(services, clusters),
+    warnings: warnings.sort(),
+  };
+}
