@@ -18,6 +18,7 @@ export function renderLegend(pane: HTMLElement, open: boolean, onClose: () => vo
     ["sun", "cluster; look from its title"],
     ["planet", "file, on zoom"],
     ["dashed", "contract"],
+    ["dotted", "echo, off until shown"],
     ["solid arc", "import"],
     ["bright", "on this review path"],
   ];
@@ -38,6 +39,7 @@ export function renderLegend(pane: HTMLElement, open: boolean, onClose: () => vo
     ["F", "behavioural only / all"],
     ["P", "whole scene"],
     ["follow", "camera tracks the file cursor"],
+    ["echoes", "dotted token edges, off by default"],
     ["+ −", "zoom in / out"],
     ["⌘↵", "stage note"],
   ];

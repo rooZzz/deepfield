@@ -57,6 +57,7 @@ test("overview prefers contract over echo over import", () => {
   assert.equal(wideClusterEdges(doc).find((edge) => edge.source === "c:1" && edge.target === "c:2")?.kind, "contract");
   doc.edges = doc.edges.filter((edge) => edge.kind !== "contract");
   assert.equal(wideClusterEdges(doc).find((edge) => edge.source === "c:1" && edge.target === "c:2")?.kind, "echo");
+  assert.equal(wideClusterEdges(doc, false).find((edge) => edge.source === "c:1" && edge.target === "c:2")?.kind, "import");
 });
 
 test("path hops are the walk pairs, not a second edge kind", () => {

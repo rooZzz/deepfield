@@ -52,6 +52,14 @@ export function renderFollow(on: boolean): void {
   requireEl("#cam-follow").setAttribute("aria-pressed", on ? "true" : "false");
 }
 
+export function renderEchoes(on: boolean): void {
+  const btn = requireEl("#map-echoes");
+  btn.setAttribute("aria-pressed", on ? "true" : "false");
+  const label = on ? "hide echo edges" : "show echo edges";
+  btn.title = label;
+  btn.setAttribute("aria-label", label);
+}
+
 export function renderVeil(show: boolean, line: string): void {
   const veil = requireEl("#veil");
   veil.hidden = !show;

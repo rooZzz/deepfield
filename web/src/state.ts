@@ -28,6 +28,7 @@ export const app = {
   statusLine: "",
   overview: true,
   followFiles: true,
+  showEchoes: false,
   revealCursor: false,
   intro: false,
 };

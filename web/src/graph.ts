@@ -22,7 +22,7 @@ export type GraphView = {
   zoomBy: (factor: number) => void;
   resize: () => void;
   destroy: () => void;
-  replace: (graph: GraphDocument, hidden: BucketId[]) => void;
+  replace: (graph: GraphDocument, hidden: BucketId[], fit?: boolean) => void;
   hud: () => void;
   emphasize: (scope: Scope) => void;
   frame: (overview: boolean) => void;
@@ -33,6 +33,7 @@ export type GraphHandlers = {
   onBackground: () => void;
   onZoom: (zoom: number, files: boolean) => void;
   hud: () => HudModel;
+  echoes: () => boolean;
 };
 
 export function mountGraph(
@@ -45,7 +46,7 @@ export function mountGraph(
   container.style.background = "transparent";
   const cy = cytoscape({
     container,
-    elements: toElements(graph, hidden),
+    elements: toElements(graph, hidden, handlers.echoes()),
     style: graphStyle,
     layout: { name: "preset", fit: false },
     minZoom: CAMERA.min,
@@ -171,11 +172,17 @@ export function mountGraph(
       host.removeEventListener("wheel", onWheel, { capture: true });
       cy.destroy();
     },
-    replace(next, nextHidden) {
+    replace(next, nextHidden, fit = true) {
+      const pan = cy.pan();
+      const zoom = cy.zoom();
       cy.elements().remove();
-      cy.add(toElements(next, nextHidden));
+      cy.add(toElements(next, nextHidden, handlers.echoes()));
       applyLod(cy);
-      fitScene(cy);
+      if (fit) {
+        fitScene(cy);
+      } else {
+        cy.viewport({ zoom, pan });
+      }
       paintHud();
     },
     hud: paintHud,
@@ -231,10 +238,11 @@ function applyLod(cy: Core): void {
 }
 
 function expose(cy: Core): void {
-  (globalThis as { __deepfield?: { zoom: () => number; filesVisible: () => boolean; pan: () => { x: number; y: number } } }).__deepfield = {
+  (globalThis as { __deepfield?: { zoom: () => number; filesVisible: () => boolean; pan: () => { x: number; y: number }; echoDrawn: () => number } }).__deepfield = {
     zoom: () => cy.zoom(),
     filesVisible: () => cy.zoom() >= LOD.files,
     pan: () => cy.pan(),
+    echoDrawn: () => cy.edges('[kind = "echo"]').length,
   };
 }
 

@@ -16,7 +16,7 @@ export const LOD = {
 
 export const CAMERA = { min: 0.25, max: 4, step: 1.25 };
 
-export function toElements(graph: GraphDocument, hidden: BucketId[]): ElementDefinition[] {
+export function toElements(graph: GraphDocument, hidden: BucketId[], showEchoes = true): ElementDefinition[] {
   const elements: ElementDefinition[] = [];
   for (const service of services(graph)) {
     const p = scale(graph.positions[service.id]);
@@ -47,9 +47,12 @@ export function toElements(graph: GraphDocument, hidden: BucketId[]): ElementDef
     });
     placeFiles(elements, graph, cluster, p, hidden, size / 2, look.orbit);
   }
-  addClusterEdges(elements, graph);
+  addClusterEdges(elements, graph, showEchoes);
   const ids = new Set(elements.map((item) => item.data.id).filter((id): id is string => Boolean(id)));
   for (const edge of graph.edges) {
+    if (edge.kind === "echo" && !showEchoes) {
+      continue;
+    }
     if (!ids.has(edge.fromId) || !ids.has(edge.toId)) {
       continue;
     }
@@ -104,8 +107,8 @@ function scale(pos: { x: number; y: number } | undefined): { x: number; y: numbe
   return { x: (pos?.x ?? 0.5) * SPACE, y: (pos?.y ?? 0.5) * SPACE };
 }
 
-function addClusterEdges(elements: ElementDefinition[], graph: GraphDocument): void {
-  for (const edge of wideClusterEdges(graph)) {
+function addClusterEdges(elements: ElementDefinition[], graph: GraphDocument, showEchoes: boolean): void {
+  for (const edge of wideClusterEdges(graph, showEchoes)) {
     elements.push({
       data: {
         id: edge.id,

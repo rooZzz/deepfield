@@ -11,9 +11,12 @@ export type WideEdge = {
 
 const KIND_RANK: Record<GraphEdge["kind"], number> = { contract: 2, echo: 1, import: 0 };
 
-export function wideClusterEdges(graph: GraphDocument): WideEdge[] {
+export function wideClusterEdges(graph: GraphDocument, showEchoes = true): WideEdge[] {
   const best = new Map<string, { source: string; target: string; kind: GraphEdge["kind"]; cross: boolean }>();
   for (const edge of graph.edges) {
+    if (edge.kind === "echo" && !showEchoes) {
+      continue;
+    }
     const from = clusterOfFile(graph, edge.fromId);
     const to = clusterOfFile(graph, edge.toId);
     if (!from || !to || from.id === to.id) {

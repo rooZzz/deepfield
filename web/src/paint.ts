@@ -1,5 +1,5 @@
 import { bucketOf, BUCKETS, type BucketId } from "./buckets.ts";
-import { renderEmpty, renderFilters, renderFollow, renderProgress, renderStagedChip, renderStatus, renderVeil } from "./chrome.ts";
+import { renderEmpty, renderEchoes, renderFilters, renderFollow, renderProgress, renderStagedChip, renderStatus, renderVeil } from "./chrome.ts";
 import { requireEl } from "./dom.ts";
 import { ensureHighlighter } from "./highlight.ts";
 import { focusHits } from "./inspect-hits.ts";
@@ -52,6 +52,7 @@ export function paint(fns: PaintFns): void {
   const whole = pathProgress(graph, app.review.reviewed);
   renderProgress(whole.done, whole.total);
   renderFollow(app.followFiles);
+  renderEchoes(app.showEchoes);
   renderStagedChip(app.remarks.length, () => {
     app.popover = true;
     paint(fns);

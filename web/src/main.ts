@@ -37,6 +37,7 @@ async function boot(): Promise<void> {
     onBackground: wholePath,
     onZoom: (z, vis) => renderLod(z, vis),
     hud: () => ({ graph: app.graph, focusId: app.focusId, pathIndex: app.pathIndex, remarks: app.remarks, scope: app.scope, overview: app.overview }),
+    echoes: () => app.showEchoes,
   }));
   if (app.focusId) {
     graphView?.select(app.focusId);

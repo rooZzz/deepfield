@@ -228,14 +228,22 @@ Cross-service and contract edges arc between clusters at overview. Wheel / pinch
 toward the cursor; more detail in. Clicking empty field returns to the
 whole scene.
 
-Quiet **camera chrome** sits in the lower-left of the field: zoom in,
-zoom out, frame the current scope, follow files, fit the whole scene.
+Quiet map chrome sits in the lower-left of the field, in **two stacks**:
+
+- **Camera** — zoom in, zoom out, frame the current scope, fit the
+  whole scene.
+- **Display** — follow files, show echoes.
+
 Follow files is **on** by default: walking files with `↑` `↓` or the
 hunk list moves the camera along the review path. Toggle it off to keep
 the selected path lit without the camera chasing the file cursor.
-Selecting a review path still highlights that route and frames it. The
-LOD readout lives under that stack. This is map instrumentation (glass,
-hairline, mono), not a FAB and not chrome that covers the constellation.
+Selecting a review path still highlights that route and frames it.
+
+Echo edges are **off** by default. They stay in the graph and the
+inspector; the map does not draw them until shown. Toggling display
+must not move the camera. The LOD readout lives under both stacks.
+This is map instrumentation (glass, hairline, mono), not a FAB and not
+chrome that covers the constellation.
 
 ### Right pane — review
 
@@ -350,12 +358,13 @@ they staged. Neither action lives on a review path.
 | --- | --- |
 | import, same service | short, low contrast, solid |
 | import, cross-service | long arc, higher contrast, solid, sits above territories |
-| echo | same as cross-service plus a dotted stroke (not colour alone) |
+| echo | same as cross-service plus a dotted stroke (not colour alone); hidden until the display control is on |
 | contract | same as cross-service plus a dash (not colour alone) |
 | selected path | brighter / thicker on those interconnects; never a second stroke |
 
 One stroke per cluster pair at overview (contract wins over echo wins
-over import).
+over import). While echoes are hidden, they do not win that stroke
+(import or contract may show instead).
 Do not draw a hairball. If a cluster would have more than ~8 visible
 edges at the current zoom, keep the strongest (contract + cross-service)
 and collapse the rest behind a count. Counts are data, not mystery.
@@ -580,8 +589,9 @@ we do not shrink type to fit 200 labels.
 | scroll / pinch | zoom toward cursor |
 | camera `+` `−` | zoom toward field centre |
 | camera frame | frame current scope (`Enter`) |
-| camera follow | tie the camera to file browsing (on by default) |
 | camera fit | whole scene (`P`) |
+| display follow | tie the camera to file browsing (on by default) |
+| display echoes | draw dotted echo edges (off by default) |
 | click cluster / file / pin / edge | rescope |
 | `J` `K` | up / down review path |
 | `↑` `↓` or `[` `]` | file in current scope |

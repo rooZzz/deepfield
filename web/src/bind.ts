@@ -40,6 +40,11 @@ export function bindUi(fns: PaintFns, approve: () => void): void {
       fns.setCursor(app.cursorId, false);
     }
   });
+  requireEl("#map-echoes").addEventListener("click", () => {
+    app.showEchoes = !app.showEchoes;
+    graphView?.replace(app.graph, app.hidden, false);
+    paint(fns);
+  });
   requireEl("#cam-fit").addEventListener("click", fns.wholePath);
   requireEl("#reel-scroll").addEventListener("scroll", () => {
     if (reelScrollIgnored()) {

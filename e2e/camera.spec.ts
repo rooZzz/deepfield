@@ -29,6 +29,35 @@ test("follow files is on by default and can leave the camera still", async ({ pa
   await expect(page.locator('#path-pane .path-step[aria-current="true"]')).toBeVisible();
 });
 
+test("echoes stay off until shown, without moving the camera", async ({ page }) => {
+  await page.goto("http://127.0.0.1:4173/");
+  await expect(page.locator("#map-nav #cam-in")).toBeVisible();
+  await expect(page.locator("#map-nav #cam-follow")).toHaveCount(0);
+  await expect(page.locator("#map-opts #cam-follow")).toBeVisible();
+  const echoes = page.locator("#map-echoes");
+  await expect(echoes).toHaveAttribute("aria-pressed", "false");
+  await expect.poll(async () =>
+    page.evaluate(() => {
+      const api = (globalThis as { __deepfield?: { echoDrawn: () => number } }).__deepfield;
+      return api?.echoDrawn() ?? -1;
+    }),
+  ).toBe(0);
+  await page.locator("#path-pane .path-step").first().click();
+  const before = await settled(page);
+  await echoes.click();
+  await expect(echoes).toHaveAttribute("aria-pressed", "true");
+  await expect.poll(async () =>
+    page.evaluate(() => {
+      const api = (globalThis as { __deepfield?: { echoDrawn: () => number } }).__deepfield;
+      return api?.echoDrawn() ?? 0;
+    }),
+  ).toBeGreaterThan(0);
+  const after = await camera(page);
+  expect(after.zoom).toBeCloseTo(before.zoom, 3);
+  expect(Math.abs(after.pan.x - before.pan.x)).toBeLessThan(1);
+  expect(Math.abs(after.pan.y - before.pan.y)).toBeLessThan(1);
+});
+
 function camera(page: Page): Promise<Cam> {
   return page.evaluate(() => {
     const api = (globalThis as { __deepfield?: { zoom: () => number; pan: () => { x: number; y: number } } }).__deepfield;

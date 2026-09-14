@@ -62,8 +62,8 @@
             <div id="cy"></div>
             <div id="map-hud"></div>
           </div>
-          <div id="map-controls" aria-label="map camera">
-            <div class="cam-stack">
+          <div id="map-controls" aria-label="map controls">
+            <div id="map-nav" class="cam-stack" aria-label="map camera">
               <button type="button" id="cam-in" title="+ — zoom in" aria-label="zoom in">+</button>
               <button type="button" id="cam-out" title="− — zoom out" aria-label="zoom out">−</button>
               <button type="button" id="cam-frame" title="Enter — frame this scope" aria-label="frame this scope">
@@ -72,15 +72,24 @@
                   <path d="M7 1.6v1.8M7 10.6v1.8M1.6 7h1.8M10.6 7h1.8" stroke="currentColor" stroke-width="1.2"></path>
                 </svg>
               </button>
+              <button type="button" id="cam-fit" title="P — whole scene" aria-label="fit whole scene">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M2.2 5.2V2.2h3M8.8 2.2h3v3M11.8 8.8v3h-3M5.2 11.8h-3v-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+              </button>
+            </div>
+            <div id="map-opts" class="cam-stack" aria-label="map display">
               <button type="button" id="cam-follow" title="follow files on the map" aria-label="follow files on the map" aria-pressed="true">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                   <path d="M2.6 11 6.4 4.6 11.4 7.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"></path>
                   <circle cx="11.4" cy="7.2" r="1.7" fill="currentColor"></circle>
                 </svg>
               </button>
-              <button type="button" id="cam-fit" title="P — whole scene" aria-label="fit whole scene">
+              <button type="button" id="map-echoes" title="show echo edges" aria-label="show echo edges" aria-pressed="false">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                  <path d="M2.2 5.2V2.2h3M8.8 2.2h3v3M11.8 8.8v3h-3M5.2 11.8h-3v-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"></path>
+                  <circle cx="3" cy="7" r="1.55" fill="currentColor"></circle>
+                  <circle cx="11" cy="7" r="1.55" fill="currentColor"></circle>
+                  <path d="M5.2 7h3.6" stroke="currentColor" stroke-width="1.2" stroke-dasharray="1.15 1.45" stroke-linecap="round"></path>
                 </svg>
               </button>
             </div>
