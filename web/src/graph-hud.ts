@@ -11,6 +11,7 @@ import type { Scope } from "./scope.ts";
 export type HudModel = {
   graph: GraphDocument;
   focusId: string | null;
+  hoverId?: string | null;
   pathIndex: number;
   remarks: StagedRemark[];
   scope: Scope;
@@ -27,6 +28,7 @@ export function renderHud(pane: HTMLElement, cy: Core, model: HudModel, onSelect
   const h = pane.clientHeight;
   placeServices(pane, cy, model, taken, w, h, onSelect);
   placeClusters(pane, cy, model, taken, w, h, z);
+  placeFiles(pane, cy, model, taken, w, h, z);
   placeCrossings(pane, cy, model, taken, w, h);
 }
 
@@ -84,7 +86,7 @@ function placeClusters(
     const title = String(node.data("label") ?? "");
     const repo = cluster.repo;
     const members = files(model.graph).filter((file) => cluster.memberIds.includes(file.id));
-    const sub = z > 1.05 || sel ? `${members.length} files · ${repo}` : "";
+    const sub = z < LOD.files && (z > 1.05 || sel) ? `${members.length} files · ${repo}` : "";
     const wide = Math.max(title.length * 6.4, sub.length * 5.8) + 6;
     const spot = place(disc.x, disc.y + disc.r + 4, wide, sub ? 27 : 15, taken, w, h, sel);
     if (spot) {
@@ -108,6 +110,59 @@ function placeClusters(
       pane.append(pin);
     }
   });
+}
+
+export function fileLabelAnchor(
+  sun: { x: number; y: number },
+  planet: { x: number; y: number },
+  radius: number,
+): { x: number; y: number } {
+  const dx = planet.x - sun.x;
+  const dy = planet.y - sun.y;
+  const len = Math.hypot(dx, dy) || 1;
+  const reach = radius + 10;
+  return {
+    x: planet.x + (dx / len) * reach,
+    y: planet.y + (dy / len) * reach,
+  };
+}
+
+function placeFiles(
+  pane: HTMLElement,
+  cy: Core,
+  model: HudModel,
+  taken: Box[],
+  w: number,
+  h: number,
+  z: number,
+): void {
+  if (z < LOD.fileLabel) {
+    return;
+  }
+  const nodes = cy.nodes('[kind = "file"]').toArray().sort((a, b) => {
+    const rank = (id: string) => Number(id === model.focusId || id === model.hoverId);
+    return rank(b.id()) - rank(a.id());
+  });
+  for (const node of nodes) {
+    if (node.style("display") === "none") {
+      continue;
+    }
+    const id = node.id();
+    const name = String(node.data("label") ?? "");
+    const sun = cy.getElementById(String(node.data("clusterId") ?? ""));
+    const planet = node.renderedPosition();
+    const origin = sun.empty() ? planet : sun.renderedPosition();
+    const at = fileLabelAnchor(origin, planet, Number(node.data("size")) * z * 0.5);
+    const hold = id === model.focusId || id === model.hoverId;
+    const spot = place(at.x, at.y - 6, name.length * 5.6 + 4, 12, taken, w, h, hold);
+    if (!spot) {
+      continue;
+    }
+    const tag = el("div", { class: hold ? "hud-file cur" : "hud-file" }, [name]);
+    tag.style.left = `${spot.x}px`;
+    tag.style.top = `${spot.y}px`;
+    pane.append(tag);
+  }
 }
 
 function placeCrossings(pane: HTMLElement, cy: Core, model: HudModel, taken: Box[], w: number, h: number): void {

@@ -76,3 +76,15 @@
   padding-left: 2px;
   pointer-events: none;
 }
+.hud-file {
+  position: absolute;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  line-height: 1.2;
+  color: #8b90a8;
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: 0 1px 8px #05060c, 0 0 12px #05060c;
+}
+.hud-file.cur { color: #e4e6f0; }

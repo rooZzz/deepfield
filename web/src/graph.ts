@@ -54,12 +54,13 @@ export function mountGraph(
     boxSelectionEnabled: false,
   });
   let hudTick = 0;
+  let hoverId: string | null = null;
   const paintHud = () => {
     const hud = handlers.hud();
     paintGalaxies(cy, litServices(hud));
     paintSuns(cy);
     shiftStars(cy.pan(), cy.zoom());
-    renderHud(overlay, cy, hud, handlers.onSelect);
+    renderHud(overlay, cy, { ...hud, hoverId }, handlers.onSelect);
   };
   const scheduleHud = () => {
     if (hudTick) {
@@ -77,6 +78,14 @@ export function mountGraph(
   applyLod(cy);
   fitScene(cy);
   cy.on("zoom pan", scheduleHud);
+  cy.on("mouseover", 'node[kind = "file"]', (event) => {
+    hoverId = (event.target as NodeSingular).id();
+    scheduleHud();
+  });
+  cy.on("mouseout", 'node[kind = "file"]', () => {
+    hoverId = null;
+    scheduleHud();
+  });
   cy.on("tap", "node", (event) => {
     event.stopPropagation();
     handlers.onSelect((event.target as NodeSingular).id());
@@ -208,7 +217,6 @@ function applyLod(cy: Core): void {
     cy.nodes('[kind = "file"]').forEach((node) => {
       node.style({
         display: z >= LOD.files ? "element" : "none",
-        "text-opacity": z >= LOD.fileLabel ? 1 : 0,
       });
     });
     cy.edges().forEach((edge) => {

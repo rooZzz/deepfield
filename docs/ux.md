@@ -132,7 +132,7 @@ Detail is a function of zoom:
 | Fitted (overview) | services, clusters, contract / cross-service edges |
 | Mid | cluster labels, in-service import edges |
 | Close | files around their cluster |
-| Closer | file names |
+| Closer | file names as small HUD type beside the planet |
 
 Clicking a **review path** frames every service, cluster, and connecting
 edge on that path (territory zoom, not file LOD) and recedes everything
@@ -324,7 +324,9 @@ they staged. Neither action lives on a review path.
 - A sun, never a folder icon, never a red risk disc
 - Photosphere hashed from the cluster title. Same title, same sun.
   Disc is circular and opaque.
-- Label: two lines max (title, then `3 files · payments-api`)
+- Label: two lines max (title, then `3 files · payments-api`) until
+  files are visible. Then title only, so planet names are not sitting
+  on a second line under the disc.
 - Size = behavioural weight. The painted disc is that body at the
   current zoom. Edges, labels, and the selection halo must not change
   the diameter. Mechanical-only are smaller and dimmer, still a sun
@@ -336,7 +338,10 @@ they staged. Neither action lives on a review path.
 
 - Planets on a hashed orbit around the sun (lane and angle from the
   file path). Static seats, not spinning
-- Label on hover or when selected; avoid 40 overlapping labels
+- Names are HUD type at a small optical size. They do not scale with
+  zoom. They sit beside the planet, away from the sun. A name that
+  would cover a cluster title is omitted unless that file is selected
+  or hovered. Not a Cytoscape label.
 - Deletion: hollow. Add: slightly brighter
 
 ### Edges
