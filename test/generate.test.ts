@@ -3,12 +3,14 @@ import { test } from "node:test";
 import { generateGraph } from "../src/generate.ts";
 import { canonicalJson } from "../src/hash.ts";
 import { pathHits } from "../web/src/inspect-hits.ts";
-import { buildPaymentRetryFixture } from "./helpers/meta-fixture.ts";
+import { FIXTURE_BASE, buildPaymentRetryFixture } from "./helpers/meta-fixture.ts";
+
+const vsMain = { base: FIXTURE_BASE };
 
 test("stale pins: generate is byte-stable and hits retry + cross-service", async () => {
   const fixture = await buildPaymentRetryFixture();
-  const a = await generateGraph(fixture.root);
-  const b = await generateGraph(fixture.root);
+  const a = await generateGraph(fixture.root, vsMain);
+  const b = await generateGraph(fixture.root, vsMain);
   assert.equal(canonicalJson(a), canonicalJson(b));
   const repos = new Set(a.nodes.filter((node) => node.kind === "file").map((node) => node.repo));
   assert.equal(repos.has("idle-service"), false);
@@ -39,14 +41,14 @@ test("stale pins: generate is byte-stable and hits retry + cross-service", async
 
 test("parent pins are not the file list", async () => {
   const fixture = await buildPaymentRetryFixture();
-  const graph = await generateGraph(fixture.root);
+  const graph = await generateGraph(fixture.root, vsMain);
   const pins = graph.nodes.filter((node) => node.kind === "file" && node.class === "noise.pin");
   assert.equal(pins.length, 0);
 });
 
 test("review-path inspector evidence stays on that path's files", async () => {
   const fixture = await buildPaymentRetryFixture();
-  const graph = await generateGraph(fixture.root);
+  const graph = await generateGraph(fixture.root, vsMain);
   const files = new Map(
     graph.nodes.filter((node) => node.kind === "file").map((file) => [`${file.repo}/${file.path}`, file.id]),
   );

@@ -1,5 +1,6 @@
 import { mkdir } from "node:fs/promises";
 import { generateGraph } from "./generate.ts";
+import { flag, parseGenerateOpts } from "./opts.ts";
 import { inboxPath, readInbox, sessionDir, writeGraph, writeInbox } from "./session.ts";
 import { startServer } from "./serve.ts";
 import { watchInbox } from "./watch.ts";
@@ -9,15 +10,16 @@ async function main(): Promise<void> {
   const cmd = args[0] ?? "help";
   const root = flag(args, "--root") ?? process.cwd();
   const port = Number(flag(args, "--port") ?? "4173");
+  const opts = parseGenerateOpts(args);
   if (cmd === "generate") {
-    const graph = await generateGraph(root);
+    const graph = await generateGraph(root, opts);
     const dest = await writeGraph(root, graph);
     await ensureInbox(root);
     process.stdout.write(`${dest}\n`);
     return;
   }
   if (cmd === "serve") {
-    const graph = await generateGraph(root);
+    const graph = await generateGraph(root, opts);
     await writeGraph(root, graph);
     await ensureInbox(root);
     const url = await startServer({ root, port });
@@ -31,18 +33,10 @@ async function main(): Promise<void> {
     process.stdout.write("inbox changed\n");
     return;
   }
-  process.stderr.write("usage: cli.ts generate|serve|watch --root <dir> [--port n]\n");
+  process.stderr.write(
+    "usage: cli.ts generate|serve|watch --root <dir> [--port n] [--only repo,repo] [--base ref] [--base repo=ref]\n",
+  );
   process.exitCode = 1;
-}
-
-function flag(args: string[], name: string): string | undefined {
-  const index = args.indexOf(name);
-  if (index >= 0) {
-    return args[index + 1];
-  }
-  const prefix = `${name}=`;
-  const hit = args.find((arg) => arg.startsWith(prefix));
-  return hit?.slice(prefix.length);
 }
 
 async function ensureInbox(root: string): Promise<void> {

@@ -1,6 +1,6 @@
 # Mapping and risk rules
 
-**Status:** draft, paired with `docs/prd.md` v0.4.
+**Status:** draft, paired with `docs/prd.md` v0.5.
 **Normative for generate.** Same tree in, same graph out. If a run disagrees,
 the generator is wrong — not the change.
 
@@ -13,7 +13,8 @@ applies inbox comments as code edits, then runs the generator again.
 ## 1. Stability contract
 
 Two `generate` runs against the same local checkouts (same files, same
-diffs, same bases) must produce a **materially identical** graph.
+diffs, same membership, same bases) must produce a **materially identical**
+graph.
 
 Material (must be byte-identical after JSON canonicalisation):
 
@@ -76,17 +77,23 @@ Run these steps in order. Do not skip, do not add a “smart” extra pass.
    (also sorted by path).
 3. Drop paths with no `.git` / gitdir on disk.
 
-### M2. Per-checkout delta
+### M2. Membership and per-checkout delta
 
-For each layout path, independently:
+Layout is every nested checkout on disk. Membership is an input.
 
-- `base` = `origin/main` if that ref exists locally, else `origin/master`,
-  else the local default-branch name if it exists, else skip with a warning
-  on the checkout (not a guess).
-- `delta` = paths changed in `base...HEAD` plus staged plus unstaged.
-- If `delta` is empty, the checkout contributes **no file nodes**.
+1. If generate was given `only`, keep exactly those checkout paths.
+   Unknown names are an error. If `only` is omitted, keep every
+   discovered checkout.
+2. For each remaining checkout, independently:
+   - `base` = per-checkout override, else generate `base`, else `HEAD`.
+   - If `HEAD` is missing, `base` is the empty tree.
+   - If `HEAD` exists and `base` is not a local ref, **fail** (do not
+     guess `origin/main`, `master`, or a parent gitlink SHA).
+   - `delta` = paths changed in `base...HEAD` plus staged plus unstaged
+     plus untracked. `base...HEAD` is empty when `base` is `HEAD`.
+   - If `delta` is empty, the checkout contributes **no file nodes**.
 
-Do not use parent gitlink SHAs.
+Do not use parent gitlink SHAs as the file list. Do not switch branches.
 
 ### M3. File nodes
 
@@ -313,12 +320,16 @@ unless the item is about pins.
 
 - Fixture meta-repo with stale parent pins and four live services
   (`checkout-web`, `checkout-api`, `payments-api`, `ledger-svc`) plus an
-  empty-delta `idle-service`: generate twice, canonical JSON equal.
+  empty-delta `idle-service`, generated with `--base origin/main`: generate
+  twice, canonical JSON equal.
 - Same fixture, shuffle disk walk if needed: still equal.
 - Payment-retry style fixture: `R3_RETRY_IDEMPOTENCY` and
   `R2_CROSS_SERVICE` fire on the expected files; at least one review
   path spans all four live services and starts on a high-severity `R2`
   or `R3` cluster.
+- Same fixture with default `HEAD` (clean feature-branch trees): no file
+  nodes from those services.
+- `--only` drops a dirty checkout that was not named.
 - Empty-delta submodule: no file nodes, no false risk.
 - Inbox apply that only changes a comment in code: regenerate; cluster ids
   for untouched files stay the same.

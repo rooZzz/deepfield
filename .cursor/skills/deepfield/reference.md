@@ -16,10 +16,18 @@ not scrape the UI.
 From the Deepfield project (not necessarily the reviewed root):
 
 ```bash
-npx tsx src/cli.ts generate --root <workspace>
-npx tsx src/cli.ts serve --root <workspace> [--port 4173]
+npx tsx src/cli.ts generate --root <workspace> [--only repo,repo] [--base ref] [--base repo=ref]
+npx tsx src/cli.ts serve --root <workspace> [--port 4173] [--only repo,repo] [--base ref] [--base repo=ref]
 npx tsx src/cli.ts watch --root <workspace>
 ```
+
+`--only` is membership (posix paths relative to `--root`). Omitted:
+every discovered checkout with a non-empty delta.
+
+`--base` defaults to `HEAD` (working tree). A plain `--base ref` applies
+to every included checkout. `--base repo=ref` overrides one checkout.
+A missing ref fails the generate. The generator never infers
+`origin/main`.
 
 `scripts/generate.sh`, `scripts/serve.sh`, and `scripts/watch.sh` wrap
 the same commands and infer `--root` as cwd.
@@ -35,7 +43,7 @@ Version `1`. Arrays sorted by `id`. Positions are a pure function of ids.
   one connected walk (may span services). Every cluster is in exactly
   one path.
 - `positions`: `{ x, y }` in 0..1 for services and clusters
-- `warnings`: skipped checkouts, missing bases
+- `warnings`: empty; a missing `--base` ref fails the generate instead
 
 File ids: `file:<repo-rel>:<path>`. Root repo uses `.` as `repo-rel`.
 

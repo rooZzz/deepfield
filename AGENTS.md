@@ -67,9 +67,10 @@ Generate is a deterministic Node program. Rules live in
 cluster, title, score risk, or order the review path by judgment.
 
 A meta-repo is layout, not the change. Discover nested checkouts from
-`.gitmodules` and on-disk git roots. Compute each checkout's delta against
-*that* repo's base (`origin/main` by default). Do not use parent submodule
-pin SHAs as the file list. Skip checkouts whose local delta is empty.
+`.gitmodules` and on-disk git roots. Membership (`--only`) and comparison
+base (`--base`, default `HEAD`) are inputs from the invoking agent. Do
+not guess `origin/main`. Do not use parent submodule pin SHAs as the
+file list. Skip checkouts whose local delta is empty.
 
 Skill loop: generate `.deepfield/graph.json`, boot the web app, watch
 `.deepfield/inbox.json`. On inbox change, apply comments to the named

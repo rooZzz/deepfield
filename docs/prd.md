@@ -159,11 +159,12 @@ feedback back into those same checkouts.
 The meta-repo is a **layout**: `.gitmodules` (and nested `.git` directories)
 tell Deepfield which service checkouts live where.
 
-The change itself is derived from **each checkout’s local git state**:
-
-- current branch
-- commits not in that repo’s base (usually `origin/main`)
-- staged and unstaged working tree
+The change itself is derived from **each checkout’s local git state**, as
+it sits on disk: whatever branch is checked out, plus staged, unstaged,
+and untracked files. The invoking agent names which checkouts belong in
+the review and, when the review includes commits already on those
+branches, names the comparison base. The generator does **not** guess
+`origin/main`.
 
 Parent gitlinks are **out of band** during active work. They are housekeeping
 after merge (“re-pin meta-repo to latest main on each submodule”). Deepfield
@@ -199,7 +200,9 @@ fact cannot be established, omit the edge. Never fabricate connections.
 
 ### 5.4 What the agent is for
 
-The agent does **not** map the change and does **not** define risk.
+The agent does **not** map the change and does **not** define risk. It
+**does** name the review scope: which nested checkouts to include, and
+which git base to diff when the review is more than the working tree.
 
 The skill is this loop:
 
@@ -365,16 +368,19 @@ From the workspace root:
 Layout answers “which services could be in this view.” It does not answer
 “what changed.”
 
-### 8.2 Delta (from each checkout)
+### 8.2 Delta (from each included checkout)
 
-For each present checkout, independently:
+The generator does not invent a base and does not switch branches.
 
 ```text
-base  = that repo’s default remote branch (origin/main, else origin/master,
-        else the upstream of the default branch)
 HEAD  = whatever is actually checked out (branch, detached, dirty)
-delta = git diff + log of base...HEAD, plus unstaged/staged work
+base  = per-checkout override, else generate --base, else HEAD
+delta = git diff of base...HEAD (empty when base is HEAD),
+        plus staged, unstaged, and untracked work
 ```
+
+A missing `--base` ref is an error. Do not fall back to `origin/main`,
+`master`, or the parent gitlink SHA.
 
 Include the checkout in the change **iff the delta is non-empty**.
 
@@ -382,18 +388,26 @@ A checkout sitting cleanly on its base is scenery. It may still appear as a
 **consumer/producer context node** if another included checkout’s skeleton
 has a contract edge to it, but it does not contribute files.
 
-### 8.3 Default membership rule (v1, to refine)
+### 8.3 Membership
 
-Include every nested checkout with a non-empty local delta.
+Layout is every nested checkout on disk. Membership is an input.
 
-Rationale: the meta-repo is already the author’s view of the feature. If a
-service is on a feature branch or has local edits, it is in play. If it is
-idle on `main`, it is not.
+The skill (the consuming agent) decides which services belong in this
+review from the user, the conversation, and local git (current branches,
+dirty trees). It passes those paths as `generate --only`. It leaves each
+checkout on its current branch. It does not `git checkout main` and it
+does not update pins.
 
-Known limitation: two unrelated in-flight features in the same view would
-merge into one map. See open questions for filters (shared branch prefix,
-explicit include/exclude). v1 can live with “the view is the feature” if
-the author uses the meta-repo that way.
+If `--only` is omitted, generate keeps every discovered checkout whose
+delta vs the requested bases is non-empty. That fallback is the working
+trees, not “everything that has diverged from main.” Two unrelated dirty
+checkouts in the same view still merge into one map; `--only` is how the
+harness prevents that.
+
+When the review should include commits already on a branch, the agent
+passes `--base` from harness context (a PR target, a branch the user
+named, a SHA). Repeat `--base repo=ref` when checkouts differ. Committed
+feature-branch work is invisible unless that base is supplied.
 
 ### 8.4 What we deliberately ignore
 
@@ -425,7 +439,7 @@ Precision can improve later. Missing an edge is better than guessing.
 | ID | Requirement | Priority |
 | --- | --- | --- |
 | F1 | Discover nested checkouts from local layout (`.gitmodules` + on-disk git) | P0 |
-| F2 | Compute each checkout’s local delta vs its own base; union into one change | P0 |
+| F2 | Compute each included checkout’s local delta vs the harness-supplied base (default HEAD); union into one change | P0 |
 | F3 | Do not use parent submodule pins as the primary change set | P0 |
 | F4 | Emit canonical `.deepfield/graph.json` (sorted ids; schema versioned) | P0 |
 | F5 | Generator implements `docs/mapping-and-risk.md` with no model in the loop | P0 |
@@ -551,14 +565,12 @@ Answer these before Phase 1 hardens.
 
 1. **Skill location.** Personal (`~/.cursor/skills/deepfield`) vs project
    skill that ships in this repo for others to copy?
-2. **Membership when several features share a view.** Default is “every
-   checkout with a local delta.” Do we need v1 filters (shared branch
-   prefix / ticket, explicit include list), or is “the meta-repo *is* the
-   feature view” enough?
-3. **Base ref per checkout.** `origin/main` (with `master` fallback) vs
-   each repo’s upstream tracking branch? What if `origin/main` is stale
-   locally — review against local `origin/main` (no implicit fetch) or
-   warn?
+2. **Membership when several features share a view.** The agent passes
+   `--only`. Omitted `--only` means every checkout with a non-empty delta
+   vs the requested bases. Branch-prefix UI filters remain P1 (F22).
+3. **Base ref per checkout.** Default `HEAD` (working tree). Explicit
+   `--base` / `--base repo=ref` from the harness. Never infer
+   `origin/main`. A missing ref fails the generate. No implicit fetch.
 4. **Languages in v1.** TypeScript/JavaScript imports first, then a generic
    file-path fallback for everything else?
 5. **How the app is served.** The skill loop boots a local Vite server

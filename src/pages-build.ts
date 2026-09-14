@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { build } from "vite";
 import { generateGraph } from "./generate.ts";
 import { canonicalJson } from "./hash.ts";
-import { buildPaymentRetryFixture } from "../test/helpers/meta-fixture.ts";
+import { FIXTURE_BASE, buildPaymentRetryFixture } from "../test/helpers/meta-fixture.ts";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const WEB = path.join(ROOT, "web");
@@ -14,7 +14,7 @@ const base = process.env.PAGES_BASE ?? `/${repo}/`;
 process.env.VITE_DEEPFIELD_STATIC = "1";
 
 const fixture = await buildPaymentRetryFixture();
-const graph = await generateGraph(fixture.root);
+const graph = await generateGraph(fixture.root, { base: FIXTURE_BASE });
 graph.root = "demo";
 
 await build({

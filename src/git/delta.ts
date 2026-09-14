@@ -7,39 +7,32 @@ import type { Checkout } from "./layout.ts";
 
 export type Delta = {
   checkout: Checkout;
-  base: string | null;
+  base: string;
   files: ChangedFile[];
-  warning?: string;
 };
 
-export async function checkoutDelta(checkout: Checkout): Promise<Delta> {
+const EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
+
+export async function checkoutDelta(checkout: Checkout, baseRef: string): Promise<Delta> {
   const head = await gitOk(checkout.abs, ["rev-parse", "--verify", "HEAD"]);
-  const base = head ? await resolveBase(checkout.abs) : "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
-  if (!base) {
-    return {
-      checkout,
-      base: null,
-      files: [],
-      warning: `no local base ref in ${checkout.repo}`,
-    };
+  if (!head) {
+    return await collect(checkout, EMPTY_TREE, false);
   }
-  const names = await changedPaths(checkout.abs, base, Boolean(head));
+  const resolved = await gitOk(checkout.abs, ["rev-parse", "--verify", baseRef]);
+  if (resolved === null) {
+    throw new Error(`generate base ${baseRef} not found in ${checkout.repo}`);
+  }
+  return await collect(checkout, baseRef, true);
+}
+
+async function collect(checkout: Checkout, base: string, hasHead: boolean): Promise<Delta> {
+  const names = await changedPaths(checkout.abs, base, hasHead);
   const files: ChangedFile[] = [];
   for (const rel of names) {
-    files.push(await describe(checkout, base, rel, Boolean(head)));
+    files.push(await describe(checkout, base, rel, hasHead));
   }
   files.sort((a, b) => a.path.localeCompare(b.path));
   return { checkout, base, files };
-}
-
-async function resolveBase(cwd: string): Promise<string | null> {
-  for (const ref of ["origin/main", "origin/master", "main", "master"]) {
-    const ok = await gitOk(cwd, ["rev-parse", "--verify", ref]);
-    if (ok !== null) {
-      return ref;
-    }
-  }
-  return gitOk(cwd, ["symbolic-ref", "--short", "refs/remotes/origin/HEAD"]);
 }
 
 async function changedPaths(cwd: string, base: string, hasHead: boolean): Promise<string[]> {

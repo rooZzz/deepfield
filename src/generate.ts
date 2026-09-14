@@ -3,7 +3,7 @@ import { describeDiff } from "./diff-kind.ts";
 import { clusterFiles } from "./cluster.ts";
 import { contractEdges } from "./contracts.ts";
 import { checkoutDelta } from "./git/delta.ts";
-import { discoverCheckouts } from "./git/layout.ts";
+import { discoverCheckouts, type Checkout } from "./git/layout.ts";
 import { sortById } from "./hash.ts";
 import { importEdges } from "./imports.ts";
 import { loadPackages } from "./packages.ts";
@@ -12,17 +12,22 @@ import { layoutPositions } from "./positions.ts";
 import { riskHits } from "./risk.ts";
 import type { FileNode, GraphDocument, ServiceNode } from "./types.ts";
 
-export async function generateGraph(root: string): Promise<GraphDocument> {
-  const checkouts = await discoverCheckouts(root);
-  const warnings: string[] = [];
+export type GenerateOpts = {
+  only?: string[];
+  base?: string;
+  bases?: Record<string, string>;
+};
+
+export function requestedBase(repo: string, opts: GenerateOpts = {}): string {
+  return opts.bases?.[repo] ?? opts.base ?? "HEAD";
+}
+
+export async function generateGraph(root: string, opts: GenerateOpts = {}): Promise<GraphDocument> {
+  const checkouts = selectCheckouts(await discoverCheckouts(root), opts.only);
   const files: FileNode[] = [];
   const deltas = [];
   for (const checkout of checkouts) {
-    const delta = await checkoutDelta(checkout);
-    deltas.push(delta);
-    if (delta.warning) {
-      warnings.push(delta.warning);
-    }
+    deltas.push(await checkoutDelta(checkout, requestedBase(checkout.repo, opts)));
   }
   for (const delta of deltas) {
     const paths = new Set(delta.files.map((file) => file.path));
@@ -73,6 +78,19 @@ export async function generateGraph(root: string): Promise<GraphDocument> {
     risks,
     paths,
     positions: layoutPositions(services, clusters),
-    warnings: warnings.sort(),
+    warnings: [],
   };
+}
+
+function selectCheckouts(discovered: Checkout[], only: string[] | undefined): Checkout[] {
+  if (!only?.length) {
+    return discovered;
+  }
+  const known = new Set(discovered.map((checkout) => checkout.repo));
+  const missing = only.filter((repo) => !known.has(repo));
+  if (missing.length) {
+    throw new Error(`generate --only unknown checkout(s): ${missing.join(", ")}`);
+  }
+  const allow = new Set(only);
+  return discovered.filter((checkout) => allow.has(checkout.repo));
 }

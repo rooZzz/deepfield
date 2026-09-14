@@ -4,6 +4,8 @@ import { tmpdir } from "node:os";
 import { git, initMain } from "./git.ts";
 import { seedCheckoutApi, seedCheckoutWeb, seedIdle, seedLedger, seedPayments } from "./seed-vertical.ts";
 
+export const FIXTURE_BASE = "origin/main";
+
 export type MetaFixture = {
   root: string;
   payments: string;

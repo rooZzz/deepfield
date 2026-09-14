@@ -19,21 +19,39 @@ From this repo root, the CLI is `npx tsx src/cli.ts`. Wrappers live in
 
 Work in the workspace the user wants reviewed (often a meta-repo of
 submodules). Parent gitlink pins may be stale. That is normal. Do not
-update pins unless the user asks.
+update pins unless the user asks. Do not check out `main` (or any other
+branch) to “fix” the graph.
+
+You choose **scope**. The generator does not guess `origin/main` and does
+not pick services.
 
 generate change graph and boot webapp
 listen for changes to .deepfield/inbox.json
   — that is where the user's comments will be sent
   — when that file changes: make the changes, then regenerate the graph
 
+### Scope
+
+Before generate, from the user, the conversation, and local git:
+
+1. `REVIEW_ROOT` — the meta-repo (or single repo) on disk.
+2. `--only` — nested checkout paths relative to that root that belong in
+   this review (named services, current branches, dirty trees). Omit only
+   when the whole view is the review.
+3. `--base` — omit to review the working tree (staged, unstaged,
+   untracked vs `HEAD`). If the review should include commits already on
+   a branch, take the base from the harness (a PR target, a branch the
+   user named, a SHA). Repeat `--base repo=ref` when checkouts differ.
+   Do not default to `origin/main`.
+
+Leave those checkouts on the branches they already have.
+
 ### Generate and boot
 
 ```bash
-npx tsx src/cli.ts generate --root "$REVIEW_ROOT"
-npx tsx src/cli.ts serve --root "$REVIEW_ROOT"
+npx tsx src/cli.ts generate --root "$REVIEW_ROOT" --only "$REPOS" [--base "$BASE"]
+npx tsx src/cli.ts serve --root "$REVIEW_ROOT" --only "$REPOS" [--base "$BASE"]
 ```
-
-`REVIEW_ROOT` is the meta-repo (or single repo) on disk. Default: cwd.
 
 Do not hand-edit `.deepfield/graph.json`. Do not invent clusters, edges,
 risk, or path order.
@@ -59,21 +77,23 @@ This blocks until `.deepfield/inbox.json` changes, then exits 0.
    the user asked to commit. Do not click GitHub/GitLab Approve.
 4. Set each item to `applied`, `partial`, or `blocked` with a short
    reason. Keep history.
-5. Run generate again. Then boot/serve if the app is not running. Then
-   watch again.
+5. Run generate again with the **same** `--only` and `--base` as the
+   first generate. Then boot/serve if the app is not running. Then watch
+   again.
 
 ## Examples
 
 **Vertical feature in a submodule meta-repo**
 
-User: "Deepfield this." You generate, serve, and watch. You do not
-`git submodule update` first.
+User: "Deepfield this." You name the in-play checkouts, generate with
+`--only`, serve, and watch. You do not `git submodule update` first. You
+do not check out `main`.
 
 **Comment apply**
 
 Inbox item on `edge:contract:...`: "client must match retry contract."
 You edit the consumer and producer checkouts as needed, mark the item
-applied, generate.
+applied, generate with the same scope.
 
 ## Additional resources
 

@@ -3,10 +3,10 @@ import path from "node:path";
 import { generateGraph } from "../src/generate.ts";
 import { startServer } from "../src/serve.ts";
 import { writeGraph, writeInbox } from "../src/session.ts";
-import { buildPaymentRetryFixture } from "../test/helpers/meta-fixture.ts";
+import { FIXTURE_BASE, buildPaymentRetryFixture } from "../test/helpers/meta-fixture.ts";
 
 const fixture = await buildPaymentRetryFixture();
-const graph = await generateGraph(fixture.root);
+const graph = await generateGraph(fixture.root, { base: FIXTURE_BASE });
 await writeGraph(fixture.root, graph);
 await writeInbox(fixture.root, { version: 1, items: [] });
 await writeFile(path.join(fixture.root, ".deepfield", "root.txt"), fixture.root);
