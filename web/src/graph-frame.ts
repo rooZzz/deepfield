@@ -1,10 +1,12 @@
 import type { CollectionReturnValue, Core, NodeSingular } from "cytoscape";
 import type { GraphDocument } from "../../src/types.ts";
+import { LOD } from "./graph-elements.ts";
 import { hopKey, pathAt, pathClusters } from "./model.ts";
 import { edgeClusterIds, scopeClusterIds, type Scope } from "./scope.ts";
 
 const EASE = 400;
 const PATH_CAP = 1.05;
+const FILE_CAP = LOD.files + 0.2;
 
 export function litClusterIds(
   graph: GraphDocument,
@@ -94,7 +96,7 @@ export function frameScope(
     return;
   }
   if (scope.kind === "edge") {
-    fitPad(cy, edgeHull(cy, graph, scope.id), 48, PATH_CAP);
+    fitPad(cy, edgeHull(cy, graph, scope.id), 48, FILE_CAP);
     return;
   }
   let col = cy.collection();
@@ -106,7 +108,7 @@ export function frameScope(
       }
     });
   }
-  fitPad(cy, col, 56, 1.55);
+  fitPad(cy, col, 56, FILE_CAP);
 }
 
 function pathHull(cy: Core, clusterIds: string[]): CollectionReturnValue {
@@ -137,6 +139,12 @@ function edgeHull(cy: Core, graph: GraphDocument, edgeId: string): CollectionRet
   for (const id of ids) {
     col = col.union(cy.getElementById(id));
   }
+  cy.nodes('[kind = "file"]').forEach((node) => {
+    if (ids.has(String(node.data("clusterId") ?? ""))) {
+      col = col.union(node);
+    }
+  });
+  col = col.union(cy.getElementById(edgeId));
   cy.edges().forEach((edge) => {
     if (ids.has(edge.source().id()) && ids.has(edge.target().id())) {
       col = col.union(edge);

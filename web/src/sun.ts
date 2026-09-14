@@ -6,8 +6,6 @@ export type SunLook = {
   mid: string;
   rim: string;
   corona: string;
-  squash: number;
-  tilt: number;
   scale: number;
   orbit: number;
   spots: Array<{ x: number; y: number; r: number; a: number }>;
@@ -61,8 +59,6 @@ export function sunLook(label: string): SunLook {
     mid: type.mid,
     rim: type.rim,
     corona: type.corona,
-    squash: 0.88 + rand() * 0.12,
-    tilt: rand() * Math.PI,
     scale: 0.9 + rand() * 0.28,
     orbit: 1.15 + rand() * 0.35,
     spots,
@@ -92,6 +88,14 @@ export function planetLook(
   };
 }
 
+export function sunScreen(
+  pos: { x: number; y: number },
+  size: number,
+  zoom: number,
+): { x: number; y: number; r: number } {
+  return { x: pos.x, y: pos.y, r: Math.max(0, size) * zoom * 0.5 };
+}
+
 export function paintSun(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -101,13 +105,10 @@ export function paintSun(
   dim: number,
 ): void {
   ctx.save();
-  ctx.globalAlpha = dim;
   ctx.translate(x, y);
-  ctx.rotate(look.tilt);
-  ctx.scale(1, look.squash);
   const corona = ctx.createRadialGradient(0, 0, r * 0.35, 0, 0, r * 2.5);
-  corona.addColorStop(0, fade(look.corona, 0.4));
-  corona.addColorStop(0.45, fade(look.corona, 0.12));
+  corona.addColorStop(0, fade(look.corona, 0.4 * dim));
+  corona.addColorStop(0.45, fade(look.corona, 0.12 * dim));
   corona.addColorStop(1, fade(look.corona, 0));
   ctx.fillStyle = corona;
   ctx.beginPath();
@@ -116,22 +117,30 @@ export function paintSun(
   for (const flare of look.flares) {
     ctx.save();
     ctx.rotate(flare.ang);
-    ctx.fillStyle = fade(look.mid, 0.32);
+    ctx.fillStyle = fade(look.mid, 0.32 * dim);
     ctx.beginPath();
     ctx.ellipse(r * 0.92, 0, r * flare.len, r * flare.wid, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
   }
+  const core = shade(look.core, dim);
+  const mid = shade(look.mid, dim);
+  const rim = shade(look.rim, dim);
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = rim;
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.fill();
   const body = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
-  body.addColorStop(0, look.core);
-  body.addColorStop(0.42, look.mid);
-  body.addColorStop(1, look.rim);
+  body.addColorStop(0, core);
+  body.addColorStop(0.42, mid);
+  body.addColorStop(1, rim);
   ctx.fillStyle = body;
   ctx.beginPath();
   ctx.arc(0, 0, r, 0, Math.PI * 2);
   ctx.fill();
   for (const spot of look.spots) {
-    ctx.fillStyle = fade(look.core, spot.a);
+    ctx.fillStyle = fade(core, spot.a);
     ctx.beginPath();
     ctx.arc(spot.x * r, spot.y * r, spot.r * r, 0, Math.PI * 2);
     ctx.fill();
@@ -149,8 +158,6 @@ export function paintOrbit(
 ): void {
   ctx.save();
   ctx.translate(x, y);
-  ctx.rotate(look.tilt);
-  ctx.scale(1, look.squash);
   ctx.strokeStyle = fade(look.corona, 0.28 * dim);
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -162,6 +169,15 @@ export function paintOrbit(
 function fade(hex: string, a: number): string {
   const n = Number.parseInt(hex.slice(1), 16);
   return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+}
+
+function shade(hex: string, dim: number): string {
+  const n = Number.parseInt(hex.slice(1), 16);
+  const k = Math.max(0, Math.min(1, dim));
+  const r = Math.round(((n >> 16) & 255) * k);
+  const g = Math.round(((n >> 8) & 255) * k);
+  const b = Math.round((n & 255) * k);
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
 }
 
 function lift(hex: string): string {

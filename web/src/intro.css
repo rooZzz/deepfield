@@ -28,8 +28,14 @@
   font: 500 18px/1.25 var(--font-heading);
   letter-spacing: -0.02em;
 }
-#intro-card .lead {
+#intro-card .hook {
   margin: 10px 0 0;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--color-neutral-100);
+}
+#intro-card .lead {
+  margin: 8px 0 0;
   font-size: 15px;
   line-height: 1.35;
   color: var(--color-neutral-200);

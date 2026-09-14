@@ -4,6 +4,7 @@ import { el } from "./dom.ts";
 import { ACC, ACC3 } from "./palette.ts";
 import { byId, files, pathAt, pathClusters } from "./model.ts";
 import { LOD } from "./graph-elements.ts";
+import { sunScreen } from "./sun.ts";
 import type { StagedRemark } from "./remarks.ts";
 import type { Scope } from "./scope.ts";
 
@@ -70,7 +71,7 @@ function placeClusters(
 ): void {
   cy.nodes('[kind = "cluster"]').forEach((node) => {
     const id = node.id();
-    const bb = node.renderedBoundingBox({ includeLabels: false });
+    const disc = sunScreen(node.renderedPosition(), Number(node.data("size")), z);
     const sel = model.focusId === id;
     const inPath = pathClusters(model.graph).includes(id);
     if (z < LOD.clusterLabel && !sel && !inPath) {
@@ -85,7 +86,7 @@ function placeClusters(
     const members = files(model.graph).filter((file) => cluster.memberIds.includes(file.id));
     const sub = z > 1.05 || sel ? `${members.length} files · ${repo}` : "";
     const wide = Math.max(title.length * 6.4, sub.length * 5.8) + 6;
-    const spot = place(bb.x1 + bb.w / 2, bb.y2 + 4, wide, sub ? 27 : 15, taken, w, h, sel);
+    const spot = place(disc.x, disc.y + disc.r + 4, wide, sub ? 27 : 15, taken, w, h, sel);
     if (spot) {
       const wrap = el("div", { class: "hud-label" });
       wrap.style.left = `${spot.x}px`;
@@ -98,7 +99,7 @@ function placeClusters(
     }
     const mine = model.remarks.filter((item) => item.fileId && members.some((file) => file.id === item.fileId));
     if (mine.length) {
-      const pinAt = place(bb.x1 - 8, bb.y1 - 8, 17, 17, taken, w, h, true);
+      const pinAt = place(disc.x - disc.r - 8, disc.y - disc.r - 8, 17, 17, taken, w, h, true);
       const pin = el("div", { class: "hud-pin" }, [String(mine.length)]);
       pin.style.left = `${pinAt.x - 8.5}px`;
       pin.style.top = `${pinAt.y}px`;

@@ -13,16 +13,18 @@ function graph(): GraphDocument {
       { id: "s:a", kind: "service", repo: "a" },
       { id: "s:b", kind: "service", repo: "b" },
       { id: "c:1", kind: "cluster", repo: "a", title: "one", memberIds: ["f:1"], summary: "1 file" },
-      { id: "c:2", kind: "cluster", repo: "b", title: "two", memberIds: ["f:2"], summary: "1 file" },
+      { id: "c:2", kind: "cluster", repo: "b", title: "two", memberIds: ["f:2", "f:4"], summary: "2 files" },
       { id: "c:3", kind: "cluster", repo: "b", title: "three", memberIds: ["f:3"], summary: "1 file" },
       { id: "f:1", kind: "file", repo: "a", path: "a.ts", change: "modify", class: "behavioural" },
       { id: "f:2", kind: "file", repo: "b", path: "b.ts", change: "modify", class: "behavioural" },
       { id: "f:3", kind: "file", repo: "b", path: "c.ts", change: "modify", class: "behavioural" },
+      { id: "f:4", kind: "file", repo: "b", path: "d.ts", change: "modify", class: "behavioural" },
     ],
     edges: [
       { id: "e:import", kind: "import", fromId: "f:1", toId: "f:2", crossService: true },
       { id: "e:contract", kind: "contract", fromId: "f:1", toId: "f:2", crossService: true },
       { id: "e:local", kind: "import", fromId: "f:2", toId: "f:3", crossService: false },
+      { id: "e:inner", kind: "import", fromId: "f:2", toId: "f:4", crossService: false },
     ],
     risks: [],
     paths: [["c:1", "c:2"]],
@@ -66,4 +68,5 @@ test("edge scope is both endpoint clusters", () => {
   const doc = graph();
   assert.deepEqual(edgeClusterIds(doc, "e:import").sort(), ["c:1", "c:2"]);
   assert.deepEqual(edgeClusterIds(doc, "e:local").sort(), ["c:2", "c:3"]);
+  assert.deepEqual(edgeClusterIds(doc, "e:inner"), ["c:2"]);
 });

@@ -61,7 +61,8 @@ On boot (graph already generated):
 No splash marketing. No empty state that asks the user to “get started”
 if a graph exists.
 
-**Hosted demo only:** after the map is up, a single card. Tagline:
+**Hosted demo only:** after the map is up, a single card. Lead hook:
+Sick of reviewing 100-page diffs in an arbitrary order? Then tagline:
 Review the real change not just the diff. Then how to use paths, the
 map, the hunks, and the keys. The card grows with the viewport (not a
 narrow stub in the middle of an ultrawide). Plain instructions. No
@@ -102,9 +103,11 @@ layering). It should already look like a top-down constellation. Literal
 3. **Edges** — in-service: short, dim. Cross-service: longer, higher arc,
    brighter. Contract edges are distinct from import edges (weight + dash,
    not colour alone).
-4. **Clusters** — suns. Photosphere, corona, and a little squash/tilt
-   hash from the cluster title (same title, same sun). Size still tracks
-   behavioural weight. Mechanical-only are small dim suns, not hollow
+4. **Clusters** — suns. Round opaque photosphere; corona, spots, and
+   flares hash from the cluster title (same title, same sun). Not an
+   oval. Field stars do not shine through the disc. Size still tracks
+   behavioural weight, and does not jump when files or the selection
+   halo appear. Mechanical-only are small dim suns, not hollow
    rings and not a red wash.
 5. **Files** — planets on a hashed 2D orbit around their sun, visible at
    close zoom. Colour, size, and lane from the file path. Deleted:
@@ -136,7 +139,8 @@ edge on that path (territory zoom, not file LOD) and recedes everything
 else. A service, cluster, or edge does the same at a zoom that fits
 that scope (cluster → file LOD; service → territory; edge → **both
 endpoint clusters and the interconnect**, never a hidden file or a
-single end). Import and contract lines on the map select that way.
+single end). A file-to-file edge stays at file LOD so the planets stay
+on screen. Import and contract lines on the map select that way.
 Paint (ticks, notes) does not reset the camera. Clicking empty field /
 `P` fits the whole scene and lights every path. Click a file (once
 visible) to load it in the review pane.
@@ -315,9 +319,11 @@ they staged. Neither action lives on a review path.
 
 - A sun, never a folder icon, never a red risk disc
 - Photosphere hashed from the cluster title. Same title, same sun.
+  Disc is circular and opaque.
 - Label: two lines max (title, then `3 files · payments-api`)
-- Size = behavioural weight. Mechanical-only are smaller and dimmer,
-  still a sun
+- Size = behavioural weight. The painted disc is that body at the
+  current zoom. Edges, labels, and the selection halo must not change
+  the diameter. Mechanical-only are smaller and dimmer, still a sun
 - Noise is not a node (filtered in data). If the user unhides a noise
   class, those files appear as dust inside the territory, not peers of
   behavioural clusters
