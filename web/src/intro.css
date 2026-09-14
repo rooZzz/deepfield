@@ -46,10 +46,6 @@
   color: var(--color-neutral-300);
 }
 #intro-card li { margin: 6px 0; }
-#intro-card .note {
-  margin: 14px 0 0;
-  font-size: 12px;
-}
 #intro-keys {
   display: grid;
   grid-template-columns: auto 1fr;

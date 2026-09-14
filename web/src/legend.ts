@@ -29,7 +29,7 @@ export function renderLegend(pane: HTMLElement, open: boolean, onClose: () => vo
   }
   const keys = el("div", { class: "mono dim", style: "margin-top:12px;padding-top:12px;border-top:1px solid var(--color-neutral-900);display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:10px;" });
   const map: Array<[string, string]> = [
-    ["J K", "review path next / prev"],
+    ["J K", "review path up / down"],
     ["↑ ↓", "file in path scope"],
     ["R", "done on this file"],
     ["Space", "done and next"],

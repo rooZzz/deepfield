@@ -212,8 +212,9 @@ Collapsible, resizable. No walk headline, no assumed service flow, no
 - **progress** — done files / files on that path.
 
 Do not list services or `from {repo}` on the row. Which checkouts a path
-touches becomes clear when it is selected (map + review pane). `J` / `K`
-walks the list. `P` / empty field returns the camera to the whole scene.
+touches becomes clear when it is selected (map + review pane). `J` walks
+up the list, `K` walks down. The selected row stays in the visible rail.
+`P` / empty field returns the camera to the whole scene.
 
 ### Main — graph
 
@@ -575,7 +576,7 @@ we do not shrink type to fit 200 labels.
 | camera follow | tie the camera to file browsing (on by default) |
 | camera fit | whole scene (`P`) |
 | click cluster / file / pin / edge | rescope |
-| `J` `K` | next / previous review path |
+| `J` `K` | up / down review path |
 | `↑` `↓` or `[` `]` | file in current scope |
 | `R` | done on this file |
 | `Space` | done and next |

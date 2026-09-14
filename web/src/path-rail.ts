@@ -59,6 +59,20 @@ export function renderPath(
   ]);
 }
 
+export function revealCurrentPath(list: HTMLElement): void {
+  const cur = list.querySelector(":scope > .path-step[aria-current='true']");
+  if (!(cur instanceof HTMLElement)) {
+    return;
+  }
+  const view = list.getBoundingClientRect();
+  const row = cur.getBoundingClientRect();
+  if (row.top < view.top) {
+    list.scrollTop -= view.top - row.top;
+  } else if (row.bottom > view.bottom) {
+    list.scrollTop += row.bottom - view.bottom;
+  }
+}
+
 function pathBody(
   card: ReturnType<typeof pathCard>,
   prog: { done: number; total: number },

@@ -7,7 +7,7 @@ import { renderInspector } from "./inspector.ts";
 import { dismissIntro, renderIntro } from "./intro.ts";
 import { renderLegend } from "./legend.ts";
 import { files } from "./model.ts";
-import { renderPath } from "./path-rail.ts";
+import { renderPath, revealCurrentPath } from "./path-rail.ts";
 import { paintCursorRows, revealFile, runWithoutReelSync } from "./reel-cursor.ts";
 import { renderReel, renderReelMeta } from "./reel.ts";
 import { inScope } from "./remarks.ts";
@@ -63,8 +63,11 @@ export function paint(fns: PaintFns): void {
     paint(fns);
   }, dragRail));
   const railList = pane.querySelector(".rail-steps");
-  if (railList) {
+  if (railList instanceof HTMLElement) {
     railList.scrollTop = railY;
+    if (app.revealCursor) {
+      revealCurrentPath(railList);
+    }
   }
   pane.classList.toggle("closed", !app.railOpen);
   const rows = scopeFiles(graph, app.scope, app.hidden, app.pathIndex);

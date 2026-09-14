@@ -27,9 +27,9 @@ export function bindKeys(handlers: KeyHandlers): void {
       }
       return;
     }
-    if (key === "j" || key === "n") {
+    if (key === "k" || key === "n") {
       handlers.path(1);
-    } else if (key === "k") {
+    } else if (key === "j") {
       handlers.path(-1);
     } else if (event.key === "ArrowDown" || key === "]") {
       event.preventDefault();
