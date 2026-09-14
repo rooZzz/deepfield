@@ -1,0 +1,37 @@
+#intro {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  place-items: center;
+  padding: 24px;
+  background: rgba(15, 17, 32, 0.72);
+}
+#intro:not([hidden]) { display: grid; }
+#intro-card {
+  width: min(400px, 100%);
+  padding: 22px 22px 18px;
+  background: #181a28;
+  border: 1px solid var(--color-neutral-900);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+#intro-title {
+  margin: 6px 0 0;
+  font: 500 18px/1.25 var(--font-heading);
+  letter-spacing: -0.02em;
+}
+#intro-card .lead {
+  margin: 8px 0 0;
+  color: var(--color-neutral-300);
+}
+#intro-card ul {
+  margin: 14px 0 0;
+  padding: 0 0 0 1.1em;
+  color: var(--color-neutral-300);
+}
+#intro-card li { margin: 4px 0; }
+#intro-card .note {
+  margin: 14px 0 0;
+  font-size: 12px;
+}
+#intro-ok { margin-top: 16px; }

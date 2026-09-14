@@ -29,6 +29,7 @@ export const app = {
   overview: true,
   followFiles: true,
   revealCursor: false,
+  intro: false,
 };
 
 export let graphView: GraphView | null = null;

@@ -12,6 +12,7 @@ export type KeyHandlers = {
   wholePath: () => void;
   legend: () => void;
   zoom: (dir: number) => void;
+  locked: () => boolean;
 };
 
 export function bindKeys(handlers: KeyHandlers): void {
@@ -20,6 +21,12 @@ export function bindKeys(handlers: KeyHandlers): void {
       return;
     }
     const key = event.key.toLowerCase();
+    if (handlers.locked()) {
+      if (key === "escape") {
+        handlers.escape();
+      }
+      return;
+    }
     if (key === "j" || key === "n") {
       handlers.path(1);
     } else if (key === "k") {

@@ -60,6 +60,12 @@ On boot (graph already generated):
 No splash marketing. No empty state that asks the user to “get started”
 if a graph exists.
 
+**Hosted demo only:** after the map is up, a single card explains what
+Deepfield is and that this link is a fixture. One screen. Dismiss to the
+map (`ok` / `Esc` / click the dim). Remember dismissal in this browser.
+Not a carousel. Not shown in the local skill loop. Document title is
+`Deepfield | Demo`.
+
 If generate is still running: a still field with a single status line,
 not a skeleton of fake nodes.
 
@@ -164,8 +170,11 @@ Cytoscape (preset layout, wheel zoom, zoom LOD). Chrome is structural.
 
 Widescreens have spare **width**. The graph keeps the full height under
 the filter strip. Title, reading tools, and the change live in one right
-pane (~480px, resizable 380–720). There is no bottom reel and no window
-footer; keyboard hints sit as a thin strip at the foot of that pane.
+pane (about 480px on a laptop, larger on a wide display). Drag the grip
+from 380px up to the leftover width after the path rail and a floor for
+the map — there is no 720px ceiling on a super-wide screen. There is no
+bottom reel and no window footer; keyboard hints sit as a thin strip at
+the foot of that pane.
 
 ### Top bar
 
@@ -555,7 +564,7 @@ we do not shrink type to fit 200 labels.
 | `R` | done on this file |
 | `Space` | done and next |
 | `Enter` | expand cluster (file LOD) |
-| `Esc` | close legend / cancel composer / collapse |
+| `Esc` | close demo card / legend / cancel composer / collapse |
 | `F` | behavioural only / all buckets |
 | `P` | whole scene |
 | `+` `=` / `−` | zoom in / out |
@@ -587,7 +596,7 @@ rings. Do not use non-focusable divs as buttons.
 - 3D that you cannot read (orbiting spaghetti, perspective that hides
   labels)
 - Rainbow risk heatmaps, gauge charts, “AI confidence” meters
-- Onboarding carousels
+- Onboarding carousels (the hosted demo may show one card, once)
 - Settings pages before the map works
 - Sound
 - Emoji, badges-for-everything, celebratory confetti on apply

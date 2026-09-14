@@ -307,9 +307,9 @@ listen for changes to .deepfield/inbox.json
 Generate is a CLI/script. Boot is a local server pointed at the graph
 file. A **GitHub Pages build** is a static fixture of the same SPA
 (baked `graph.json`; notes and ticks stay in the browser). It is a
-shareable demo, not the skill loop. Listen is a file watch (script or
-skill loop) on that one path. The agent does not invent a second
-channel.
+shareable demo, not the skill loop. First visit shows one card, then the
+map. Listen is a file watch (script or skill loop) on that one path. The
+agent does not invent a second channel.
 
 ### Web app
 

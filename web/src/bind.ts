@@ -1,12 +1,17 @@
 import { requireEl } from "./dom.ts";
 import { CAMERA } from "./graph-elements.ts";
+import { applyDemoTitle, dismissIntro, shouldShowIntro } from "./intro.ts";
 import { bindKeys } from "./keys.ts";
 import { fileAtViewport, reelScrollIgnored } from "./reel-cursor.ts";
 import { paint, type PaintFns } from "./paint.ts";
-import { dragIns } from "./resize.ts";
+import { applyLayout, dragIns } from "./resize.ts";
+import { insDefault } from "./pane.ts";
 import { app, graphView } from "./state.ts";
 
 export function bindUi(fns: PaintFns, approve: () => void): void {
+  app.intro = shouldShowIntro();
+  applyDemoTitle();
+  app.insW = insDefault(window.innerWidth, app.railOpen ? app.railW : 34);
   requireEl("#legend-btn").addEventListener("click", () => {
     app.legend = !app.legend;
     paint(fns);
@@ -58,8 +63,12 @@ export function bindUi(fns: PaintFns, approve: () => void): void {
       graphView?.frame(false);
     },
     zoom: (dir) => graphView?.zoomBy(dir > 0 ? CAMERA.step : 1 / CAMERA.step),
+    locked: () => app.intro,
     escape: () => {
-      if (app.popover) {
+      if (app.intro) {
+        dismissIntro();
+        app.intro = false;
+      } else if (app.popover) {
         app.popover = false;
       } else if (app.pending.kind !== "scope") {
         fns.clearPending();
@@ -81,5 +90,5 @@ export function bindUi(fns: PaintFns, approve: () => void): void {
       paint(fns);
     },
   });
-  window.addEventListener("resize", () => graphView?.resize());
+  window.addEventListener("resize", () => applyLayout());
 }

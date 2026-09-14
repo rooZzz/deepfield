@@ -4,6 +4,7 @@ import { requireEl } from "./dom.ts";
 import { ensureHighlighter } from "./highlight.ts";
 import { focusHits } from "./inspect-hits.ts";
 import { renderInspector } from "./inspector.ts";
+import { dismissIntro, renderIntro } from "./intro.ts";
 import { renderLegend } from "./legend.ts";
 import { files } from "./model.ts";
 import { renderPath } from "./path-rail.ts";
@@ -96,6 +97,11 @@ export function paint(fns: PaintFns): void {
     app.popover = false;
     paint(fns);
   }, fns.requestChanges, fns.editRemark, fns.deleteRemark);
+  renderIntro(app.intro, () => {
+    dismissIntro();
+    app.intro = false;
+    paint(fns);
+  });
   if (app.focusId) {
     graphView?.select(app.focusId);
   }

@@ -24,6 +24,14 @@ await build({
   define: {
     "import.meta.env.VITE_DEEPFIELD_STATIC": JSON.stringify("1"),
   },
+  plugins: [
+    {
+      name: "demo-title",
+      transformIndexHtml(html) {
+        return html.replace("<title>Deepfield</title>", "<title>Deepfield | Demo</title>");
+      },
+    },
+  ],
   build: { outDir: "dist", emptyOutDir: true },
 });
 

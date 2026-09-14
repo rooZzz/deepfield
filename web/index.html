@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="./src/reel.css" />
     <link rel="stylesheet" href="./src/staged.css" />
     <link rel="stylesheet" href="./src/map.css" />
+    <link rel="stylesheet" href="./src/intro.css" />
   </head>
   <body>
     <div id="app">
@@ -105,6 +106,22 @@
             <p id="review-hint" class="mono dim">↑ ↓ file · space done &amp; next · J K path</p>
           </div>
         </aside>
+      </div>
+    </div>
+
+    <div id="intro" hidden>
+      <div id="intro-card" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+        <p class="kicker accent">demo</p>
+        <h1 id="intro-title">Deepfield</h1>
+        <p class="lead">Review the change, not the diff.</p>
+        <p class="lead">One map for a feature that spans several services — not a file list per PR.</p>
+        <ul>
+          <li>what moved together</li>
+          <li>where the risk is</li>
+          <li>a path to walk, then notes on the map</li>
+        </ul>
+        <p class="note dim">This link is a fixture. Notes stay in this browser. They do not land in git.</p>
+        <button type="button" id="intro-ok" class="btn-primary">ok</button>
       </div>
     </div>
 
