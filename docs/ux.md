@@ -39,7 +39,8 @@ is wrong.
 - Quiet chrome, loud map
 - Graph in the centre, full height; path rail left; review (compact
   title + hunks) on the right — widescreen width, not a crushed bottom strip
-- Light means *signal* (risk, selection, path). The field stays dark.
+- Light means *signal* (selection, path). Suns are identity, not risk.
+  Risk lives on chips. The field stays dark.
 - Motion is camera and settlement, not decoration. Star parallax is
   camera, not a second animation channel.
 
@@ -51,8 +52,8 @@ On boot (graph already generated):
 
 1. **0–300ms** — black field, product mark “Deepfield”, no spinner circus.
 2. **Settlement** — service territories ease into place from a
-   deterministic layout seed. Clusters appear as points, then take size.
-3. **Path lights** — review paths draw as routes on the map, then the
+   deterministic layout seed. Clusters appear as suns, then take size.
+3. **Path lights** — interconnects on the review paths brighten, then the
    camera rests on the whole scene.
 4. **Readable** — you can read service names, cluster titles, and the
    first review path in the rail without hovering.
@@ -60,11 +61,13 @@ On boot (graph already generated):
 No splash marketing. No empty state that asks the user to “get started”
 if a graph exists.
 
-**Hosted demo only:** after the map is up, a single card explains what
-Deepfield is and that this link is a fixture. One screen. Dismiss to the
-map (`ok` / `Esc` / click the dim). Remember dismissal in this browser.
-Not a carousel. Not shown in the local skill loop. Document title is
-`Deepfield | Demo`.
+**Hosted demo only:** after the map is up, a single card. Tagline:
+Review the real change not just the diff. Then how to use paths, the
+map, the hunks, and the keys. The card grows with the viewport (not a
+narrow stub in the middle of an ultrawide). Plain instructions. No
+marketing voice. No em dashes. Dismiss (`ok` / `Esc` / click the dim).
+Remember in this browser. Not a carousel. Not shown in the local skill
+loop. Document title is `Deepfield | Demo`.
 
 If generate is still running: a still field with a single status line,
 not a skeleton of fake nodes.
@@ -99,16 +102,15 @@ layering). It should already look like a top-down constellation. Literal
 3. **Edges** — in-service: short, dim. Cross-service: longer, higher arc,
    brighter. Contract edges are distinct from import edges (weight + dash,
    not colour alone).
-4. **Clusters** — the primary bodies. Size = behavioural weight (count of
-   `behavioural` files, not raw LOC). Title = path prefix from the
-   generator.
-5. **Risk heat** — fill + corona on clusters (and file dots when close)
-   scale with how much in-scope evidence sits in that body. Cool = none,
-   amber = medium, hot = high. Brighter / larger corona = more hits.
-   Colour and corona together; colour-only is a fail. Rule names live
-   in the inspector and on the path rail, not as chips on the map.
-6. **Path** — a polyline through each review path’s clusters. The
-   selected path is the brightest route on the map.
+4. **Clusters** — suns. Photosphere, corona, and a little squash/tilt
+   hash from the cluster title (same title, same sun). Size still tracks
+   behavioural weight. Mechanical-only are small dim suns, not hollow
+   rings and not a red wash.
+5. **Files** — planets on a hashed 2D orbit around their sun, visible at
+   close zoom. Colour, size, and lane from the file path. Deleted:
+   hollow. Not animated. Not a 3D swarm.
+6. **Path** — the selected walk lights the interconnects it already
+   uses. Not a second polyline on the same pair.
 7. **Selection** — one focus. Everything else recedes (dim, do not hide).
 8. **Comments** — small pins on the target. They never own the layout.
 
@@ -116,7 +118,9 @@ layering). It should already look like a top-down constellation. Literal
 
 The graph is **Cytoscape.js**: wheel and pinch zoom, pan, tap to select.
 Positions come from the generator (preset layout). Do not run a force
-layout.
+layout. Drag pans the field, including over service territories. Those
+galaxies are paint; they do not grab the pointer. Tap a service name on
+the HUD to select that checkout.
 
 Detail is a function of zoom:
 
@@ -132,10 +136,10 @@ edge on that path (territory zoom, not file LOD) and recedes everything
 else. A service, cluster, or edge does the same at a zoom that fits
 that scope (cluster → file LOD; service → territory; edge → **both
 endpoint clusters and the interconnect**, never a hidden file or a
-single end). Import, contract, and path-hop lines on the map all select
-that way. Paint (ticks, notes) does not reset the camera. Clicking
-empty field / `P` fits the whole scene and lights every path. Click a
-file (once visible) to load it in the review pane.
+single end). Import and contract lines on the map select that way.
+Paint (ticks, notes) does not reset the camera. Clicking empty field /
+`P` fits the whole scene and lights every path. Click a file (once
+visible) to load it in the review pane.
 
 Never replace the map with a file list page.
 
@@ -211,11 +215,11 @@ walks the list. `P` / empty field returns the camera to the whole scene.
 
 Cytoscape constellation on the Nocturne field. Territories are galaxies
 of clustered stars (spiral / barred / elliptical, no gas wash). Layout slots sit
-on a spaced grid and do not overlap. Clusters are discs (size = behavioural weight;
-mechanical-only are hollow). Risk is heat on the body (fill + corona),
-not a rule chip. The
-selected review path is lit; other paths recede. Cross-service and
-contract edges arc between clusters at overview. Wheel / pinch zoom
+on a spaced grid and do not overlap. Clusters are suns (title hashes
+the look; size is behavioural weight). Files are planets on zoom.
+Risk is chips on the rail and the file, not a red fill on the sun. The
+selected review path is lit on its interconnects; other paths recede.
+Cross-service and contract edges arc between clusters at overview. Wheel / pinch zoom
 toward the cursor; more detail in. Clicking empty field returns to the
 whole scene.
 
@@ -303,47 +307,49 @@ they staged. Neither action lives on a review path.
   hashed from the service id — not an opaque sphere, a hard oval, or a
   fog bloom
 - Layout centres stay on a spaced grid so neighbouring galaxies do not merge
-- Clicking the hull (not a cluster) focuses the service: the review pane
-  lists its clusters; path still global
+- Clicking the HUD name focuses the service: the review pane lists its
+  clusters; path still global. The galaxy paint does not grab the
+  pointer.
 
 ### Cluster
 
-- Disc or compact hull, never a folder icon
+- A sun, never a folder icon, never a red risk disc
+- Photosphere hashed from the cluster title. Same title, same sun.
 - Label: two lines max (title, then `3 files · payments-api`)
-- Behavioural clusters are solid; mechanical-only are hollow / dim
+- Size = behavioural weight. Mechanical-only are smaller and dimmer,
+  still a sun
 - Noise is not a node (filtered in data). If the user unhides a noise
   class, those files appear as dust inside the territory, not peers of
   behavioural clusters
 
 ### File (expanded)
 
-- Small points on a short orbit around the cluster
+- Planets on a hashed orbit around the sun (lane and angle from the
+  file path). Static seats, not spinning
 - Label on hover or when selected; avoid 40 overlapping labels
-- Deletion: struck / hollow. Add: slightly brighter
+- Deletion: hollow. Add: slightly brighter
 
 ### Edges
 
 | Kind | Draw |
 | --- | --- |
-| import, same service | short, low contrast |
-| import, cross-service | long arc, higher contrast, sits above territories |
-| contract | same as cross-service plus a distinct dash or double line |
-| path | separate layer per review path; ignores edge kind |
+| import, same service | short, low contrast, solid |
+| import, cross-service | long arc, higher contrast, solid, sits above territories |
+| contract | same as cross-service plus a dash (not colour alone) |
+| selected path | brighter / thicker on those interconnects; never a second stroke |
 
+One stroke per cluster pair at overview (contract wins over import).
 Do not draw a hairball. If a cluster would have more than ~8 visible
-edges at the current zoom, keep the strongest (contract + cross-service
-+ path) and collapse the rest behind a count. Counts are data, not
-mystery.
+edges at the current zoom, keep the strongest (contract + cross-service)
+and collapse the rest behind a count. Counts are data, not mystery.
 
 ### Risk
 
-- **Heat on the body**, not a rule chip on the map. Fill + corona
-  encode how much in-scope evidence sits in that cluster (count of
-  evidence files, high weighted over medium). Cool = none, amber =
-  medium, hot = high. Brighter / larger corona = more hits. Colour and
-  corona together; colour-only is a fail.
-- Rule names stay on the path rail and as chips on the file that holds
-  the evidence. The map does not draw `Retry` / `Money` chips.
+- Not a colour on the sun. Fill-as-heat made every hotspot rust-red
+  and hid cool clusters. Risk stays on the path rail and as chips on
+  the file that holds the evidence.
+- The map does not draw `Retry` / `Money` chips and does not paint
+  high/medium/cool on cluster bodies.
 - Hits are **in the current scope**: one-word chip on that file; title
   and excerpt on hover. A rule may fire across the vertical change;
   selecting a review path, cluster, file, or edge only chips evidence

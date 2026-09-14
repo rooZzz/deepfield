@@ -10,7 +10,7 @@
     #05060c;
   overflow: hidden;
 }
-#galaxies, #field, #cy, #map-hud, #stars { position: absolute; inset: 0; }
+#galaxies, #suns, #field, #cy, #map-hud, #stars { position: absolute; inset: 0; }
 #field { z-index: 1; }
 #stars {
   pointer-events: none;
@@ -23,9 +23,10 @@
   display: block;
 }
 #galaxies { pointer-events: none; z-index: 1; }
-#cy { z-index: 2; background: transparent; }
+#suns { pointer-events: none; z-index: 2; }
+#cy { z-index: 3; background: transparent; }
 #cy canvas { background: transparent; }
-#map-hud { pointer-events: none; overflow: hidden; z-index: 3; }
+#map-hud { pointer-events: none; overflow: hidden; z-index: 4; }
 #map-hud button { pointer-events: auto; }
 #map-controls {
   position: absolute;

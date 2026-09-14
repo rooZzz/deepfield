@@ -15,12 +15,11 @@ export function renderLegend(pane: HTMLElement, open: boolean, onClose: () => vo
     ]),
   );
   const rows: Array<[string, string]> = [
-    ["cluster", "size is behavioural weight"],
-    ["hollow", "mechanical-only"],
-    ["corona", "heat = in-scope risk"],
-    ["dashed", "contract edge"],
-    ["violet arc", "cross-service import"],
-    ["route", "selected review path"],
+    ["sun", "cluster; look from its title"],
+    ["planet", "file, on zoom"],
+    ["dashed", "contract"],
+    ["solid arc", "import"],
+    ["bright", "on this review path"],
   ];
   for (const [k, v] of rows) {
     pane.append(el("div", { style: "display:grid;grid-template-columns:72px 1fr;gap:8px;font-size:11.5px;color:var(--color-neutral-400);margin-bottom:8px;" }, [

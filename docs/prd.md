@@ -307,8 +307,8 @@ listen for changes to .deepfield/inbox.json
 Generate is a CLI/script. Boot is a local server pointed at the graph
 file. A **GitHub Pages build** is a static fixture of the same SPA
 (baked `graph.json`; notes and ticks stay in the browser). It is a
-shareable demo, not the skill loop. First visit shows one card, then the
-map. Listen is a file watch (script or skill loop) on that one path. The
+shareable demo, not the skill loop. First visit shows one card (tagline
+plus how to use it), then the map. Listen is a file watch (script or skill loop) on that one path. The
 agent does not invent a second channel.
 
 ### Web app
@@ -330,12 +330,13 @@ Normative UI is [ux.md](ux.md). In short:
 Default: **2D constellation** (semantic topology with depth cues). Full
 spec: [ux.md](ux.md).
 
-- Service territories → clusters (bodies) → files on expand.
-- Cross-service and contract edges as high arcs; each review path as a
-  route on the map.
-- Risk: fill + corona heat from in-scope evidence, never colour alone.
-  Rule chips stay in the inspector and path rail, not on the map.
-- Size from behavioural weight. Positions from ids (stable across generate).
+- Service territories → suns (clusters) → planets (files on expand).
+- Cross-service and contract edges as high arcs; the selected review
+  path lights those arcs, and is not drawn as a second stroke.
+- Risk: chips on the path rail and the evidence file. Not a red wash
+  on the map.
+- Sun look hashes from cluster title. Size from behavioural weight.
+  Positions from ids (stable across generate).
 - App shell: top bar, left review path, centre graph (full height),
   right review pane (compact title + hunks). Graph is never covered by floating chrome
   (path rail, review pane, FABs). Staged-notes review is a full-viewport

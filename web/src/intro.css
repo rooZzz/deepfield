@@ -3,35 +3,70 @@
   inset: 0;
   z-index: 70;
   place-items: center;
-  padding: 24px;
+  padding: clamp(16px, 3vw, 48px);
   background: rgba(15, 17, 32, 0.72);
 }
 #intro:not([hidden]) { display: grid; }
 #intro-card {
-  width: min(400px, 100%);
+  width: min(36rem, 100%);
+  display: grid;
+  grid-template-areas:
+    "lead"
+    "how"
+    "ok";
+  gap: 18px 40px;
   padding: 22px 22px 18px;
   background: #181a28;
   border: 1px solid var(--color-neutral-900);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
 }
+#intro-lead { grid-area: lead; }
+#intro-how { grid-area: how; }
 #intro-title {
   margin: 6px 0 0;
   font: 500 18px/1.25 var(--font-heading);
   letter-spacing: -0.02em;
 }
 #intro-card .lead {
-  margin: 8px 0 0;
-  color: var(--color-neutral-300);
+  margin: 10px 0 0;
+  font-size: 15px;
+  line-height: 1.35;
+  color: var(--color-neutral-200);
 }
 #intro-card ul {
-  margin: 14px 0 0;
+  margin: 10px 0 0;
   padding: 0 0 0 1.1em;
   color: var(--color-neutral-300);
 }
-#intro-card li { margin: 4px 0; }
+#intro-card li { margin: 6px 0; }
 #intro-card .note {
   margin: 14px 0 0;
   font-size: 12px;
 }
-#intro-ok { margin-top: 16px; }
+#intro-keys {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 16px;
+  margin-top: 14px;
+  font-size: 11px;
+  color: var(--color-neutral-400);
+}
+#intro-ok {
+  grid-area: ok;
+  justify-self: start;
+}
+@media (min-width: 960px) {
+  #intro-card {
+    width: min(52rem, 100%);
+    grid-template-columns: minmax(16rem, 0.85fr) minmax(20rem, 1.15fr);
+    grid-template-areas:
+      "lead how"
+      "ok how";
+    padding: 28px 32px 22px;
+  }
+  #intro-ok { align-self: end; }
+}
+@media (min-width: 1600px) {
+  #intro-card { width: min(60rem, 100%); }
+}

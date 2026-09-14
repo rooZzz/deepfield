@@ -8,8 +8,9 @@ import { tapEdgeId } from "./edge-select.ts";
 import { renderHud, type HudModel } from "./graph-hud.ts";
 import { frameScope, litClusterIds, recedeOutside } from "./graph-frame.ts";
 import { graphStyle } from "./graph-style.ts";
-import { byId } from "./model.ts";
+import { byId, pathHopKeys } from "./model.ts";
 import { paintGalaxies } from "./galaxies.ts";
+import { paintSuns } from "./suns.ts";
 import { shiftStars } from "./stars.ts";
 import { edgeClusterIds, type Scope } from "./scope.ts";
 
@@ -56,6 +57,7 @@ export function mountGraph(
   const paintHud = () => {
     const hud = handlers.hud();
     paintGalaxies(cy, litServices(hud));
+    paintSuns(cy);
     shiftStars(cy.pan(), cy.zoom());
     renderHud(overlay, cy, hud, handlers.onSelect);
   };
@@ -171,7 +173,7 @@ export function mountGraph(
     emphasize(scope: Scope) {
       const hud = handlers.hud();
       const ids = litClusterIds(hud.graph, scope, hud.pathIndex, hud.overview);
-      recedeOutside(cy, ids, scope.kind === "edge" ? scope.id : null);
+      recedeOutside(cy, ids, scope.kind === "edge" ? scope.id : null, pathHopKeys(hud.graph, hud.pathIndex, hud.overview));
     },
     frame(overview: boolean) {
       const hud = handlers.hud();
@@ -211,9 +213,7 @@ function applyLod(cy: Core): void {
     });
     cy.edges().forEach((edge) => {
       const lod = edge.data("lod");
-      if (lod === "path") {
-        edge.style("display", "element");
-      } else if (lod === "detail") {
+      if (lod === "detail") {
         edge.style("display", z >= LOD.files ? "element" : "none");
       } else {
         edge.style("display", z < LOD.files ? "element" : "none");

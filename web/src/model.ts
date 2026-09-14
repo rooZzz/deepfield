@@ -62,6 +62,25 @@ export function pathClusters(graph: GraphDocument): string[] {
   return graph.paths.flat();
 }
 
+export function hopKey(a: string, b: string): string {
+  return a < b ? `${a}:${b}` : `${b}:${a}`;
+}
+
+export function pathHopKeys(graph: GraphDocument, pathIndex: number, allPaths: boolean): Set<string> {
+  const routes = allPaths ? graph.paths : [pathAt(graph, pathIndex)];
+  const keys = new Set<string>();
+  for (const route of routes) {
+    for (let i = 1; i < route.length; i++) {
+      const from = route[i - 1];
+      const to = route[i];
+      if (from && to) {
+        keys.add(hopKey(from, to));
+      }
+    }
+  }
+  return keys;
+}
+
 export function pathIndexOf(graph: GraphDocument, clusterId: string): number {
   return graph.paths.findIndex((ids) => ids.includes(clusterId));
 }

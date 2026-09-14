@@ -1,6 +1,6 @@
-import type { CollectionReturnValue, Core } from "cytoscape";
+import type { CollectionReturnValue, Core, NodeSingular } from "cytoscape";
 import type { GraphDocument } from "../../src/types.ts";
-import { pathAt, pathClusters } from "./model.ts";
+import { hopKey, pathAt, pathClusters } from "./model.ts";
 import { edgeClusterIds, scopeClusterIds, type Scope } from "./scope.ts";
 
 const EASE = 400;
@@ -18,7 +18,7 @@ export function litClusterIds(
   return scopeClusterIds(graph, scope, pathIndex);
 }
 
-export function recedeOutside(cy: Core, clusterIds: string[], edgeId: string | null): void {
+export function recedeOutside(cy: Core, clusterIds: string[], edgeId: string | null, hops: Set<string>): void {
   const ids = new Set(clusterIds);
   const repos = new Set<string>();
   cy.nodes('[kind = "cluster"]').forEach((node) => {
@@ -28,6 +28,7 @@ export function recedeOutside(cy: Core, clusterIds: string[], edgeId: string | n
   });
   cy.batch(() => {
     cy.elements().removeClass("recede");
+    cy.edges().removeClass("on-path");
     cy.nodes('[kind = "cluster"]').forEach((node) => {
       if (!ids.has(node.id())) {
         node.addClass("recede");
@@ -44,18 +45,30 @@ export function recedeOutside(cy: Core, clusterIds: string[], edgeId: string | n
       }
     });
     cy.edges().forEach((edge) => {
-      if (edge.id() === edgeId || (edge.data("kind") === "path" && ids.has(edge.source().id()) && ids.has(edge.target().id()))) {
-        return;
-      }
       const src = edge.source();
       const tgt = edge.target();
-      const srcOk = ids.has(src.id()) || ids.has(String(src.data("clusterId") ?? ""));
-      const tgtOk = ids.has(tgt.id()) || ids.has(String(tgt.data("clusterId") ?? ""));
+      const srcC = endCluster(src);
+      const tgtC = endCluster(tgt);
+      const srcOk = ids.has(src.id()) || ids.has(srcC);
+      const tgtOk = ids.has(tgt.id()) || ids.has(tgtC);
+      if (srcOk && tgtOk && hops.has(hopKey(srcC, tgtC))) {
+        edge.addClass("on-path");
+      }
+      if (edge.id() === edgeId) {
+        return;
+      }
       if (!srcOk || !tgtOk) {
         edge.addClass("recede");
       }
     });
   });
+}
+
+function endCluster(node: NodeSingular): string {
+  if (String(node.data("kind") ?? "") === "cluster") {
+    return node.id();
+  }
+  return String(node.data("clusterId") ?? "");
 }
 
 export function frameScope(

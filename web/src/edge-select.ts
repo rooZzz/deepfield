@@ -1,5 +1,41 @@
 import type { GraphDocument, GraphEdge } from "../../src/types.ts";
-import { byId, clusterOfFile } from "./model.ts";
+import { byId, clusterOfFile, hopKey } from "./model.ts";
+
+export type WideEdge = {
+  id: string;
+  source: string;
+  target: string;
+  kind: GraphEdge["kind"];
+  cross: 0 | 1;
+};
+
+export function wideClusterEdges(graph: GraphDocument): WideEdge[] {
+  const best = new Map<string, { source: string; target: string; kind: GraphEdge["kind"]; cross: boolean }>();
+  for (const edge of graph.edges) {
+    const from = clusterOfFile(graph, edge.fromId);
+    const to = clusterOfFile(graph, edge.toId);
+    if (!from || !to || from.id === to.id) {
+      continue;
+    }
+    const source = from.id < to.id ? from.id : to.id;
+    const target = from.id < to.id ? to.id : from.id;
+    const ends = hopKey(from.id, to.id);
+    const prev = best.get(ends);
+    best.set(ends, {
+      source,
+      target,
+      kind: prev?.kind === "contract" || edge.kind === "contract" ? "contract" : edge.kind,
+      cross: Boolean(prev?.cross || edge.crossService),
+    });
+  }
+  return [...best.values()].map((item) => ({
+    id: `wide:${item.kind}:${hopKey(item.source, item.target)}`,
+    source: item.source,
+    target: item.target,
+    kind: item.kind,
+    cross: item.cross ? 1 : 0,
+  }));
+}
 
 export type DrawnTap = {
   id: string;

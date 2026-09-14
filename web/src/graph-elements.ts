@@ -1,12 +1,12 @@
 import type { ElementDefinition } from "cytoscape";
 import type { ClusterNode, FileNode, GraphDocument } from "../../src/types.ts";
 import { bucketOf, type BucketId } from "./buckets.ts";
-import { behaviouralWeight, clusterOfFile, clusters, files, services } from "./model.ts";
-import { clusterHeat, clusterTone, fileTone, heatGlow } from "./heat.ts";
+import { wideClusterEdges } from "./edge-select.ts";
+import { behaviouralWeight, clusters, files, services } from "./model.ts";
+import { planetLook, sunLook } from "./sun.ts";
 
 const SPACE = 1000;
 const SERVICE = 300;
-const FILE_R = 18;
 
 export const LOD = {
   clusterLabel: 0.42,
@@ -28,30 +28,24 @@ export function toElements(graph: GraphDocument, hidden: BucketId[]): ElementDef
   }
   for (const cluster of clusters(graph)) {
     const p = scale(graph.positions[cluster.id]);
+    const label = cluster.title.split("/").slice(-2).join("/");
+    const look = sunLook(label);
     const weight = behaviouralWeight(graph, cluster);
-    const tone = clusterTone(graph, cluster.id);
-    const glow = heatGlow(clusterHeat(graph, cluster.id), tone);
+    const size = (14 + weight * 5) * look.scale;
     const station = graph.paths.findIndex((ids) => ids.includes(cluster.id));
-    const classes = [
-      weight === 0 ? "hollow" : "",
-      tone === "high" ? "risk-high" : tone === "medium" ? "risk-med" : "",
-    ].filter(Boolean).join(" ");
     elements.push({
       data: {
         id: cluster.id,
         kind: "cluster",
-        label: cluster.title.split("/").slice(-2).join("/"),
+        label,
         repo: cluster.repo,
-        size: 10 + weight * 4,
+        size,
         station: station >= 0 ? station + 1 : 0,
-        glow: glow.glow,
-        halo: glow.halo,
       },
       position: p,
-      classes,
       grabbable: false,
     });
-    placeFiles(elements, graph, cluster, p, hidden);
+    placeFiles(elements, graph, cluster, p, hidden, size / 2, look.orbit);
   }
   addClusterEdges(elements, graph);
   const ids = new Set(elements.map((item) => item.data.id).filter((id): id is string => Boolean(id)));
@@ -70,18 +64,6 @@ export function toElements(graph: GraphDocument, hidden: BucketId[]): ElementDef
       },
     });
   }
-  for (const route of graph.paths) {
-    for (let i = 1; i < route.length; i++) {
-      const from = route[i - 1];
-      const to = route[i];
-      if (!from || !to) {
-        continue;
-      }
-      elements.push({
-        data: { id: `path:${from}:${to}`, source: from, target: to, kind: "path", lod: "path" },
-      });
-    }
-  }
   return elements;
 }
 
@@ -91,28 +73,28 @@ function placeFiles(
   cluster: ClusterNode,
   origin: { x: number; y: number },
   hidden: BucketId[],
+  sunR: number,
+  orbit: number,
 ): void {
   const members = cluster.memberIds
     .map((id) => files(graph).find((file) => file.id === id))
     .filter((file): file is FileNode => Boolean(file) && !hidden.includes(bucketOf(file)));
   members.forEach((file, index) => {
-    const angle = (index / Math.max(members.length, 1)) * Math.PI * 2 - Math.PI / 2;
-    const tone = fileTone(graph, file.id);
+    const planet = planetLook(file.path, index, members.length, sunR, orbit, file.change === "add");
     elements.push({
       data: {
         id: file.id,
         kind: "file",
         label: file.path.split("/").pop() ?? file.path,
         clusterId: cluster.id,
+        fill: planet.fill,
+        size: planet.size,
       },
       position: {
-        x: origin.x + Math.cos(angle) * FILE_R,
-        y: origin.y + Math.sin(angle) * FILE_R,
+        x: origin.x + planet.x,
+        y: origin.y + planet.y,
       },
-      classes: [
-        file.change === "delete" ? "file-del" : "",
-        tone === "high" ? "file-high" : tone === "medium" ? "file-med" : "",
-      ].filter(Boolean).join(" "),
+      classes: file.change === "delete" ? "file-del" : "",
       grabbable: false,
     });
   });
@@ -123,26 +105,14 @@ function scale(pos: { x: number; y: number } | undefined): { x: number; y: numbe
 }
 
 function addClusterEdges(elements: ElementDefinition[], graph: GraphDocument): void {
-  const seen = new Set<string>();
-  for (const edge of graph.edges) {
-    const from = clusterOfFile(graph, edge.fromId);
-    const to = clusterOfFile(graph, edge.toId);
-    if (!from || !to || from.id === to.id) {
-      continue;
-    }
-    const ends = from.id < to.id ? `${from.id}:${to.id}` : `${to.id}:${from.id}`;
-    const key = `${edge.kind}:${ends}`;
-    if (seen.has(key)) {
-      continue;
-    }
-    seen.add(key);
+  for (const edge of wideClusterEdges(graph)) {
     elements.push({
       data: {
-        id: `wide:${key}`,
-        source: from.id,
-        target: to.id,
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
         kind: edge.kind,
-        cross: edge.crossService ? 1 : 0,
+        cross: edge.cross,
         lod: "wide",
       },
     });

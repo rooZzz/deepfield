@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { GraphDocument } from "../src/types.ts";
-import { edgeBetweenClusters, tapEdgeId } from "../web/src/edge-select.ts";
+import { edgeBetweenClusters, tapEdgeId, wideClusterEdges } from "../web/src/edge-select.ts";
+import { pathHopKeys } from "../web/src/model.ts";
 import { edgeClusterIds } from "../web/src/scope.ts";
 
 function graph(): GraphDocument {
@@ -45,6 +46,20 @@ test("a path hop prefers contract, then a cross-service import", () => {
   assert.equal(edgeBetweenClusters(doc, "c:1", "c:2")?.id, "e:import");
   assert.equal(edgeBetweenClusters(doc, "c:2", "c:3")?.id, "e:local");
   assert.equal(edgeBetweenClusters(doc, "c:1", "c:1"), undefined);
+});
+
+test("overview draws one stroke per cluster pair and prefers contract", () => {
+  const doc = graph();
+  const wide = wideClusterEdges(doc);
+  assert.equal(wide.length, 2);
+  assert.equal(wide.find((edge) => edge.source === "c:1" && edge.target === "c:2")?.kind, "contract");
+  assert.equal(wide.some((edge) => edge.kind === "import" && edge.source === "c:1"), false);
+});
+
+test("path hops are the walk pairs, not a second edge kind", () => {
+  const doc = graph();
+  assert.deepEqual([...pathHopKeys(doc, 0, false)], ["c:1:c:2"]);
+  assert.ok(pathHopKeys(doc, 0, true).has("c:1:c:2"));
 });
 
 test("edge scope is both endpoint clusters", () => {

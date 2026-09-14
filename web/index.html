@@ -57,6 +57,7 @@
           <div id="field" aria-label="change graph">
             <div id="stars" aria-hidden="true"></div>
             <canvas id="galaxies" aria-hidden="true"></canvas>
+            <canvas id="suns" aria-hidden="true"></canvas>
             <div id="cy"></div>
             <div id="map-hud"></div>
           </div>
@@ -111,16 +112,26 @@
 
     <div id="intro" hidden>
       <div id="intro-card" role="dialog" aria-modal="true" aria-labelledby="intro-title">
-        <p class="kicker accent">demo</p>
-        <h1 id="intro-title">Deepfield</h1>
-        <p class="lead">Review the change, not the diff.</p>
-        <p class="lead">One map for a feature that spans several services — not a file list per PR.</p>
-        <ul>
-          <li>what moved together</li>
-          <li>where the risk is</li>
-          <li>a path to walk, then notes on the map</li>
-        </ul>
-        <p class="note dim">This link is a fixture. Notes stay in this browser. They do not land in git.</p>
+        <div id="intro-lead">
+          <p class="kicker accent">demo</p>
+          <h1 id="intro-title">Deepfield</h1>
+          <p class="lead">Review the real change not just the diff</p>
+          <p class="note dim">A fixture of one feature across four services. Notes stay in this browser. They do not write git.</p>
+        </div>
+        <div id="intro-how">
+          <p class="kicker">how to use it</p>
+          <ul>
+            <li>Left: pick a review path. The map frames that walk.</li>
+            <li>Right: read the hunks. Mark a file done when you have read it.</li>
+            <li>Map: drag to pan, wheel to zoom. Click a cluster or file to open it.</li>
+          </ul>
+          <div id="intro-keys" class="mono">
+            <span>J K</span><span>next / previous path</span>
+            <span>up down</span><span>file in this path</span>
+            <span>space</span><span>done and next</span>
+            <span>note</span><span>comment on this scope</span>
+          </div>
+        </div>
         <button type="button" id="intro-ok" class="btn-primary">ok</button>
       </div>
     </div>
