@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { echoEdges, echoKey, tokensFromHunk } from "../src/echo.ts";
+import { analogMatch, echoEdges, echoKey, tokensFromHunk } from "../src/echo.ts";
 import type { FileNode } from "../src/types.ts";
 
 function file(repo: string, path: string, hunk: string): FileNode {
@@ -72,4 +72,56 @@ test("echo edges are one per service pair", () => {
     file("pay", "c.ts", "@@\n+ const correlationId = 3;\n"),
   ]);
   assert.equal(trio.length, 3);
+});
+
+test("analog match is prefix identity, not a model", () => {
+  assert.equal(analogMatch("corrId", "correlationId"), true);
+  assert.equal(analogMatch("reqId", "requestId"), true);
+  assert.equal(analogMatch("cid", "correlationId"), false);
+  assert.equal(analogMatch("sessionId", "sessionKey"), false);
+  const analog = echoEdges([
+    file("api", "a.ts", "@@\n+ const corrId = 1;\n"),
+    file("web", "b.ts", "@@\n+ const correlationId = 2;\n"),
+  ]);
+  assert.equal(analog.length, 1);
+  assert.equal(analog[0]?.token, "correlationId");
+  const request = echoEdges([
+    file("api", "a.ts", "@@\n+ const reqId = 1;\n"),
+    file("web", "b.ts", "@@\n+ const requestId = 2;\n"),
+  ]);
+  assert.equal(request.length, 1);
+  assert.equal(request[0]?.token, "requestId");
+  assert.equal(echoEdges([
+    file("api", "a.ts", "@@\n+ const cid = 1;\n"),
+    file("web", "b.ts", "@@\n+ const correlationId = 2;\n"),
+  ]).length, 0);
+  assert.equal(echoEdges([
+    file("api", "a.ts", "@@\n+ const sessionId = 1;\n"),
+    file("web", "b.ts", "@@\n+ const sessionKey = 2;\n"),
+  ]).length, 0);
+  assert.equal(echoEdges([
+    file("api", "a.ts", "@@\n+ const userId = 1;\n"),
+    file("web", "b.ts", "@@\n+ const userId = 2;\n"),
+  ]).length, 0);
+});
+
+test("hard echo prefers quoted header sites over lex-smallest", () => {
+  const edges = echoEdges([
+    file("api", "a.ts", "@@\n+ const correlationId = 1;\n"),
+    file("api", "headers.ts", "@@\n+ set('X-Correlation-Id', id);\n"),
+    file("web", "client.ts", "@@\n+ headers.correlationId = id;\n"),
+  ]);
+  assert.equal(edges.length, 1);
+  const ends = [edges[0]?.fromId, edges[0]?.toId];
+  assert.equal(ends.some((id) => id?.includes("headers.ts")), true);
+  assert.equal(ends.some((id) => id?.includes("a.ts")), false);
+});
+
+test("hard match wins over analog on the same service pair", () => {
+  const edges = echoEdges([
+    file("api", "a.ts", "@@\n+ const corrId = 1;\n+ const correlationId = 2;\n"),
+    file("web", "b.ts", "@@\n+ const correlationId = 3;\n"),
+  ]);
+  assert.equal(edges.length, 1);
+  assert.equal(edges[0]?.token, "correlationId");
 });

@@ -1,25 +1,19 @@
+import { analogMatch, betterRaw, siteScore, tokensFromHunk } from "./echo-match.ts";
 import { sortById, sortStrings } from "./hash.ts";
 import type { FileNode, GraphEdge } from "./types.ts";
 
-const MIN = 8;
 const MAX_FILES = 12;
 
-const STOP = new Set([
-  "tostring",
-  "valueof",
-  "hasownproperty",
-  "addeventlistener",
-  "createelement",
-  "queryselector",
-  "preventdefault",
-  "stoppropagation",
-  "textcontent",
-  "innerhtml",
-  "localstorage",
-  "sessionstorage",
-]);
-
 type FileKeys = { file: FileNode; keys: Map<string, string> };
+
+type Cand = {
+  hard: boolean;
+  key: string;
+  token: string;
+  count: number;
+  from: FileNode;
+  to: FileNode;
+};
 
 export function echoEdges(files: FileNode[]): GraphEdge[] {
   const byFile = collect(files);
@@ -51,6 +45,8 @@ export function echoEdges(files: FileNode[]): GraphEdge[] {
   return sortById(edges);
 }
 
+export { analogMatch, echoKey, tokensFromHunk } from "./echo-match.ts";
+
 function collect(files: FileNode[]): Map<string, FileKeys> {
   const byFile = new Map<string, FileKeys>();
   for (const file of files) {
@@ -80,7 +76,7 @@ function validKeys(byFile: Map<string, FileKeys>): Set<string> {
   }
   const valid = new Set<string>();
   for (const [key, ids] of keyFiles) {
-    if (ids.length > MAX_FILES) {
+    if (key.startsWith("~") || ids.length > MAX_FILES) {
       continue;
     }
     const repos = new Set(ids.map((id) => byFile.get(id)?.file.repo));
@@ -100,7 +96,28 @@ function pairEcho(
 ): GraphEdge | null {
   const aIds = byRepo.get(repoA) ?? [];
   const bIds = byRepo.get(repoB) ?? [];
-  const cands: Array<{ key: string; token: string; count: number; from: FileNode; to: FileNode }> = [];
+  const hard = hardCands(aIds, bIds, byFile, valid);
+  const win = pick(hard) ?? pick(analogCands(aIds, bIds, byFile));
+  if (!win) {
+    return null;
+  }
+  return {
+    id: `edge:echo:${win.from.id}:${win.to.id}`,
+    kind: "echo",
+    fromId: win.from.id,
+    toId: win.to.id,
+    crossService: true,
+    token: win.token,
+  };
+}
+
+function hardCands(
+  aIds: string[],
+  bIds: string[],
+  byFile: Map<string, FileKeys>,
+  valid: Set<string>,
+): Cand[] {
+  const cands: Cand[] = [];
   for (const key of valid) {
     const aHits = withKey(aIds, key, byFile);
     const bHits = withKey(bIds, key, byFile);
@@ -116,23 +133,63 @@ function pairEcho(
         token = betterRaw(token, raw);
       }
     }
-    const from = aBest.file.id < bBest.file.id ? aBest.file : bBest.file;
-    const to = aBest.file.id < bBest.file.id ? bBest.file : aBest.file;
-    cands.push({ key, token, count: aHits.length + bHits.length, from, to });
+    const ends = order(aBest.file, bBest.file);
+    cands.push({ hard: true, key, token, count: aHits.length + bHits.length, ...ends });
   }
-  cands.sort((a, b) => b.count - a.count || a.key.localeCompare(b.key));
-  const win = cands[0];
-  if (!win) {
-    return null;
+  return cands;
+}
+
+function analogCands(aIds: string[], bIds: string[], byFile: Map<string, FileKeys>): Cand[] {
+  const fileCount = new Map<string, number>();
+  for (const { keys } of byFile.values()) {
+    for (const key of keys.keys()) {
+      fileCount.set(key, (fileCount.get(key) ?? 0) + 1);
+    }
   }
-  return {
-    id: `edge:echo:${win.from.id}:${win.to.id}`,
-    kind: "echo",
-    fromId: win.from.id,
-    toId: win.to.id,
-    crossService: true,
-    token: win.token,
-  };
+  const cands: Cand[] = [];
+  for (const aid of aIds) {
+    const aHit = byFile.get(aid);
+    if (!aHit) {
+      continue;
+    }
+    for (const bid of bIds) {
+      const bHit = byFile.get(bid);
+      if (!bHit) {
+        continue;
+      }
+      for (const [ka, ta] of aHit.keys) {
+        for (const [kb, tb] of bHit.keys) {
+          if (ka === kb || (fileCount.get(ka) ?? 0) > MAX_FILES || (fileCount.get(kb) ?? 0) > MAX_FILES) {
+            continue;
+          }
+          if (!analogMatch(ta, tb)) {
+            continue;
+          }
+          const ends = order(aHit.file, bHit.file);
+          cands.push({
+            hard: false,
+            key: ka < kb ? ka : kb,
+            token: betterRaw(ta, tb),
+            count: siteScore(aHit.file, ta, ka) + siteScore(bHit.file, tb, kb),
+            ...ends,
+          });
+        }
+      }
+    }
+  }
+  return cands;
+}
+
+function pick(cands: Cand[]): Cand | undefined {
+  return [...cands].sort((a, b) => {
+    if (a.hard !== b.hard) {
+      return a.hard ? -1 : 1;
+    }
+    if (b.count !== a.count) {
+      return b.count - a.count;
+    }
+    return a.key.localeCompare(b.key) || a.from.id.localeCompare(b.from.id) || a.to.id.localeCompare(b.to.id);
+  })[0];
 }
 
 function withKey(ids: string[], key: string, byFile: Map<string, FileKeys>): FileKeys[] {
@@ -143,96 +200,14 @@ function withKey(ids: string[], key: string, byFile: Map<string, FileKeys>): Fil
       hits.push(hit);
     }
   }
-  hits.sort((a, b) => a.file.id.localeCompare(b.file.id));
+  hits.sort((a, b) => {
+    const token = a.keys.get(key) ?? key;
+    const diff = siteScore(b.file, b.keys.get(key) ?? token, key) - siteScore(a.file, a.keys.get(key) ?? token, key);
+    return diff || a.file.id.localeCompare(b.file.id);
+  });
   return hits;
 }
 
-export function tokensFromHunk(hunk: string): Array<{ key: string; token: string }> {
-  const found = new Map<string, string>();
-  for (const line of hunk.split("\n")) {
-    if (!isChangeLine(line)) {
-      continue;
-    }
-    for (const raw of extractRaws(line.slice(1))) {
-      if (!isDistinctive(raw)) {
-        continue;
-      }
-      const key = echoKey(raw);
-      if (!key || STOP.has(key)) {
-        continue;
-      }
-      const prev = found.get(key);
-      found.set(key, prev ? betterRaw(prev, raw) : raw);
-    }
-  }
-  return [...found.entries()].map(([key, token]) => ({ key, token }));
-}
-
-export function echoKey(raw: string): string | null {
-  let s = raw.toLowerCase();
-  if (s.startsWith("x-")) {
-    s = s.slice(2);
-  }
-  s = s.replace(/[^a-z0-9]+/g, "");
-  if (s.length < MIN) {
-    return null;
-  }
-  return s;
-}
-
-function isChangeLine(line: string): boolean {
-  if (line.startsWith("+++") || line.startsWith("---")) {
-    return false;
-  }
-  return line.startsWith("+") || line.startsWith("-");
-}
-
-function extractRaws(body: string): string[] {
-  const raws: string[] = [];
-  const quoted = /["']([^"'\\\n]{2,80})["']/g;
-  let match: RegExpExecArray | null;
-  while ((match = quoted.exec(body))) {
-    if (match[1]) {
-      raws.push(match[1]);
-    }
-  }
-  const ident = /\b[A-Za-z_][A-Za-z0-9_]*\b/g;
-  while ((match = ident.exec(body))) {
-    if (match[0]) {
-      raws.push(match[0]);
-    }
-  }
-  const kebab = /\b[A-Za-z][A-Za-z0-9]*(-[A-Za-z0-9]+)+\b/g;
-  while ((match = kebab.exec(body))) {
-    if (match[0]) {
-      raws.push(match[0]);
-    }
-  }
-  return raws;
-}
-
-function isDistinctive(raw: string): boolean {
-  if (raw.includes("/") || raw.includes(".") || raw.includes(" ")) {
-    return false;
-  }
-  return /[a-z][A-Z]/.test(raw) || /[A-Z][a-z]+[A-Z]/.test(raw) || raw.includes("-") || raw.includes("_");
-}
-
-function betterRaw(a: string, b: string): string {
-  const score = (value: string): number => {
-    let n = 0;
-    if (/[a-z][A-Z]/.test(value)) {
-      n += 2;
-    }
-    if (value.includes("-")) {
-      n += 1;
-    }
-    return n;
-  };
-  const as = score(a);
-  const bs = score(b);
-  if (bs !== as) {
-    return bs > as ? b : a;
-  }
-  return a.localeCompare(b) < 0 ? a : b;
+function order(a: FileNode, b: FileNode): { from: FileNode; to: FileNode } {
+  return a.id < b.id ? { from: a, to: b } : { from: b, to: a };
 }

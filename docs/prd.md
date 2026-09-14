@@ -430,7 +430,8 @@ Coarse and factual:
   referenced in another
 - documented contract paths
 - distinctive tokens in the hunk that appear in two or more services
-  (echo), e.g. `correlationId` / `X-Correlation-Id` with no shared import
+  (echo): hard spelling identity, then a published analog test
+  (part/prefix), never a model. Same tree, same edges.
 
 Precision can improve later. Missing an edge is better than guessing.
 

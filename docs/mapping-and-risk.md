@@ -190,11 +190,35 @@ lowercasing, stripping a leading `x-`, then dropping non-alphanumerics
 space). Drop a short denylist of DOM/JS builtins (`toString`, …). If a
 token hits more than 12 files, drop it.
 
-Echo edges are **cross-service only**. They do not join clusters inside a
-checkout. One edge per unordered service pair: the endpoints are the
-lexicographically smallest file ids in each service that carry the
-chosen token. The token is the shared distinctive token that appears in
-the most files across those two services, then key order.
+**Hard match:** same normalised key in two or more services.
+
+**Analog match** (locked judgement, still a pure function of the hunk):
+split each token into parts on camelCase / snake / kebab, drop short
+and generic parts (`id`, `key`, `dto`, `get`, `set`, …). Two *different*
+keys analog-match only when:
+
+- they have the same number of remaining parts, and
+- every shorter part equals the other or is a prefix of it (min prefix
+  3), and
+- if there is only one remaining part, it must be a *proper* prefix
+  (shorter ≥ 3, longer ≥ 7). Equal single stems do not match
+  (`sessionId` vs `sessionKey`).
+
+So `corrId` ~ `correlationId`, `reqId` ~ `requestId`. `cid` does not
+match `correlationId` (`cid` is not a prefix of `correlation`). A
+shorter distinctive token that fails the 8-character hard-key test may
+still analog-match a longer one; it is not a hard key of its own
+(`userId` in two services is not an echo). The generator does not know
+what a correlation id is. A model does not add edges.
+
+Prefer a hard match over analog. Echo edges are **cross-service only**.
+They do not join clusters inside a checkout. One edge per unordered
+service pair. Endpoints are the files with the highest *site score* in
+each service: the best change line (quoted form of the token +4, a
+`header` mention on that line +3) plus behavioural class (+1), then
+lexicographic file id. The displayed token is the shared hard key with
+the most files, else the analog pair’s preferred raw form (camelCase,
+longer spelling when tied).
 
 - `id` = `edge:echo:<from-id>:<to-id>` (`from-id` < `to-id`)
 - `kind` = `echo`
@@ -361,7 +385,9 @@ unless the item is about pins.
 - `--only` drops a dirty checkout that was not named.
 - Echo: two services add `correlationId` / `X-Correlation-Id` in the
   hunk and have no import; one `echo` edge joins the service pair.
-  Extra files with the same token do not add more edges. `undefined`
-  and same-repo repeats do not.
+  Extra files with the same token do not add more edges. Quoted /
+  `header` lines beat lex-smallest as endpoints. `corrId` analog-matches
+  `correlationId`; `cid` and `sessionId`/`sessionKey` do not.
+  `undefined` and same-repo repeats do not.
 - Inbox apply that only changes a comment in code: regenerate; cluster ids
   for untouched files stay the same.

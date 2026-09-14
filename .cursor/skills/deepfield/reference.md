@@ -38,7 +38,9 @@ Version `1`. Arrays sorted by `id`. Positions are a pure function of ids.
 
 - `nodes`: `service` | `cluster` | `file`
 - `edges`: `import` | `contract` | `echo`, with `crossService`. Echo
-  edges also carry `token` (one per service pair).
+  edges also carry `token` (one per service pair). Analog matches
+  (`corrId` ~ `correlationId`) are published prefix rules in the
+  generator, not a model. Hard spelling wins.
 - `risks`: named rules plus evidence
 - `paths`: review paths; each is cluster ids in walk order. A path is
   one connected walk (may span services). Every cluster is in exactly

@@ -64,7 +64,8 @@ try {
 
 Generate is a deterministic Node program. Rules live in
 `docs/mapping-and-risk.md`. Same tree, same graph. The agent must not
-cluster, title, score risk, or order the review path by judgment.
+cluster, title, score risk, or order the review path by judgment. Echo
+analog matches are published generator rules, not a model.
 
 A meta-repo is layout, not the change. Discover nested checkouts from
 `.gitmodules` and on-disk git roots. Membership (`--only`) and comparison
