@@ -429,6 +429,8 @@ Coarse and factual:
 - OpenAPI / proto / event schema files touched in one checkout and
   referenced in another
 - documented contract paths
+- distinctive tokens in the hunk that appear in two or more services
+  (echo), e.g. `correlationId` / `X-Correlation-Id` with no shared import
 
 Precision can improve later. Missing an edge is better than guessing.
 
@@ -452,7 +454,7 @@ Precision can improve later. Missing an edge is better than guessing.
 | F10 | Semantic filters = generator file classes | P0 |
 | F11 | Cluster click → facts → files (with repo) → diff/code | P0 |
 | F12 | Review path listed and navigable, including cross-repo steps | P0 |
-| F13 | Service grouping and interconnect edges from import/contract resolve | P0 |
+| F13 | Service grouping and interconnect edges from import/contract/echo resolve | P0 |
 | F14 | Works as a Cursor skill on a personal or project install | P0 |
 | F15 | Inbox items attach to stable graph target ids | P0 |
 | F16 | Inbox items persist across generate | P0 |

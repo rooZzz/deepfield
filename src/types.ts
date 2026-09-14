@@ -47,10 +47,11 @@ export type GraphNode = FileNode | ServiceNode | ClusterNode;
 
 export type GraphEdge = {
   id: string;
-  kind: "import" | "contract";
+  kind: "import" | "contract" | "echo";
   fromId: string;
   toId: string;
   crossService: boolean;
+  token?: string;
 };
 
 export type RiskEvidence = {

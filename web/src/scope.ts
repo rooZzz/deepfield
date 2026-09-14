@@ -97,7 +97,10 @@ export function scopeHeadline(graph: GraphDocument, scope: Scope, pathIndex: num
   }
   const edge = graph.edges.find((item) => item.id === scope.id);
   if (edge) {
-    return { headline: `${edge.kind} edge`, summary: edge.crossService ? "crosses a service boundary" : "within one service" };
+    return {
+      headline: edge.token ? `${edge.kind} · ${edge.token}` : `${edge.kind} edge`,
+      summary: edge.crossService ? "crosses a service boundary" : "within one service",
+    };
   }
   return { headline: "this scope", summary: "" };
 }

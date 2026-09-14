@@ -80,7 +80,7 @@ function pathMeta(graph: GraphDocument, pathIndex: number): string {
 
 function metaOf(graph: GraphDocument, id: string | null, edge: GraphEdge | undefined): string {
   if (edge) {
-    return `${edge.kind}${edge.crossService ? " · crosses a service" : " · one service"}`;
+    return `${edge.kind}${edge.token ? ` · ${edge.token}` : ""}${edge.crossService ? " · crosses a service" : " · one service"}`;
   }
   const node = id ? byId(graph, id) : undefined;
   if (!node) {

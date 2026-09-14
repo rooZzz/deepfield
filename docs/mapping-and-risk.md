@@ -175,6 +175,34 @@ schema name.
 Mention-scan is literal substring, case-sensitive, over the current file
 bytes. No embeddings.
 
+### M7b. Echo edges
+
+A shared header, field, or identifier often has no import and no
+contract file. Connect those files when the **hunk** (added and removed
+lines only) carries the same distinctive token in two or more services.
+
+A token is distinctive if it is camelCase, PascalCase with a second hump,
+snake_case, or kebab-case (including `X-Correlation-Id`), and its
+normalised form is at least 8 `[a-z0-9]` characters. Normalise by
+lowercasing, stripping a leading `x-`, then dropping non-alphanumerics
+(`correlationId`, `correlation_id`, `correlation-id`, and
+`X-Correlation-Id` are one token). Drop path-like strings (`.` `/`
+space). Drop a short denylist of DOM/JS builtins (`toString`, …). If a
+token hits more than 12 files, drop it.
+
+Echo edges are **cross-service only**. They do not join clusters inside a
+checkout. One edge per unordered service pair: the endpoints are the
+lexicographically smallest file ids in each service that carry the
+chosen token. The token is the shared distinctive token that appears in
+the most files across those two services, then key order.
+
+- `id` = `edge:echo:<from-id>:<to-id>` (`from-id` < `to-id`)
+- `kind` = `echo`
+- `crossService` = `true`
+- `token` = a display form of the chosen token (prefer camelCase)
+
+No embeddings. No model.
+
 ### M8. Clusters
 
 Cluster **inside a service**, never across services. Cross-service story is
@@ -183,7 +211,8 @@ edges + review path, not a merged blob.
 Within each service, take file nodes whose class is not `noise.*`.
 
 1. Build an undirected graph of those files using `import` and `contract`
-   edges that stay in-repo.
+   edges that stay in-repo. Echo edges are cross-service and are ignored
+   here.
 2. Connected components are candidate clusters.
 3. Singleton components that share a directory prefix with another
    component of size ≥1, at depth ≤ 2 from the repo root, **merge** into
@@ -209,8 +238,8 @@ per-service.
 
 The generator emits **one or more review paths**, not a single list of
 cluster stops and not a per-service sort. Clusters stay inside one
-checkout (M8). They are adjacent when an `import` or `contract` edge
-joins a member of each (undirected). A path is a connected walk on that
+checkout (M8). They are adjacent when an `import`, `contract`, or `echo`
+edge joins a member of each (undirected). A path is a connected walk on that
 graph. Cross-service story lives **inside** a path that spans checkouts.
 
 Every cluster appears in exactly one path. Grow a path from a seed until
@@ -221,14 +250,14 @@ path has closed.
 1. **Seed** a new path. Rank unvisited clusters by:
    - descending max risk severity (`high` > `medium` > `low` > none)
    - has a `crossService` edge before those that do not
-   - has a `contract` edge before those that do not
+   - has a `contract` or `echo` edge before those that do not
    - contains a `behavioural` file before those that do not
    - cluster id lexicographic
 2. **Next** is an unvisited neighbour of any cluster **already on this
    path**. Rank those neighbours by:
    - descending max risk severity
    - adjacent across a service boundary before in-service
-   - contract-edge, behavioural, cluster id (same as seed)
+   - contract or echo, behavioural, cluster id (same as seed)
 
 If two clusters share more than one edge, treat the adjacency as
 cross-service when any joining edge has `crossService: true`.
@@ -269,7 +298,7 @@ Excerpt, if present, is the first matching line (trimmed, max 120 chars).
 | ID | Severity | Predicate (all must hold unless noted) |
 | --- | --- | --- |
 | `R1_CONTRACT` | high | A contract file (M7) is in the delta with a non-`noise.*` class |
-| `R2_CROSS_SERVICE` | high | An `import` or `contract` edge has `crossService: true` and at least one end is `behavioural` |
+| `R2_CROSS_SERVICE` | high | An `import`, `contract`, or `echo` edge has `crossService: true` and at least one end is `behavioural` |
 | `R3_RETRY_IDEMPOTENCY` | high | A `behavioural` path or hunk matches `(?i)retry|idempotenc|at[-_ ]least[-_ ]once|exactly[-_ ]once|dedup|exactlyOnce|atLeastOnce` |
 | `R4_AUTH_SECURITY` | high | A `behavioural` path or hunk matches `(?i)authz?|oauth|jwt|permission|rbac|acl|secret|password|api[_-]?key|crypto|csrf|cors` |
 | `R5_DATA_LOSS` | high | A `behavioural` path or hunk matches `(?i)migrat|drop |truncate|delete from|destroy|cascade` or path contains `/migrations/` |
@@ -330,6 +359,9 @@ unless the item is about pins.
 - Same fixture with default `HEAD` (clean feature-branch trees): no file
   nodes from those services.
 - `--only` drops a dirty checkout that was not named.
-- Empty-delta submodule: no file nodes, no false risk.
+- Echo: two services add `correlationId` / `X-Correlation-Id` in the
+  hunk and have no import; one `echo` edge joins the service pair.
+  Extra files with the same token do not add more edges. `undefined`
+  and same-repo repeats do not.
 - Inbox apply that only changes a comment in code: regenerate; cluster ids
   for untouched files stay the same.

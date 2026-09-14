@@ -97,6 +97,16 @@ export const graphStyle: StylesheetJson = [
     },
   },
   {
+    selector: 'edge[kind = "echo"]',
+    style: {
+      "line-style": "dotted",
+      "line-color": "#7972a9",
+      width: 1.35,
+      opacity: 0.8,
+      "control-point-distances": 68,
+    },
+  },
+  {
     selector: 'edge[kind = "contract"]',
     style: {
       "line-style": "dashed",

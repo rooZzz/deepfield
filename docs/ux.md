@@ -350,10 +350,12 @@ they staged. Neither action lives on a review path.
 | --- | --- |
 | import, same service | short, low contrast, solid |
 | import, cross-service | long arc, higher contrast, solid, sits above territories |
+| echo | same as cross-service plus a dotted stroke (not colour alone) |
 | contract | same as cross-service plus a dash (not colour alone) |
 | selected path | brighter / thicker on those interconnects; never a second stroke |
 
-One stroke per cluster pair at overview (contract wins over import).
+One stroke per cluster pair at overview (contract wins over echo wins
+over import).
 Do not draw a hairball. If a cluster would have more than ~8 visible
 edges at the current zoom, keep the strongest (contract + cross-service)
 and collapse the rest behind a count. Counts are data, not mystery.

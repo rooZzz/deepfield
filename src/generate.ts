@@ -2,6 +2,7 @@ import { classify } from "./classify.ts";
 import { describeDiff } from "./diff-kind.ts";
 import { clusterFiles } from "./cluster.ts";
 import { contractEdges } from "./contracts.ts";
+import { echoEdges } from "./echo.ts";
 import { checkoutDelta } from "./git/delta.ts";
 import { discoverCheckouts, type Checkout } from "./git/layout.ts";
 import { sortById } from "./hash.ts";
@@ -65,6 +66,7 @@ export async function generateGraph(root: string, opts: GenerateOpts = {}): Prom
   const edges = sortById([
     ...(await importEdges(liveFiles, root, pkgLookup)),
     ...(await contractEdges(liveFiles, root)),
+    ...echoEdges(liveFiles),
   ]);
   const clusters = clusterFiles(liveFiles, edges);
   const risks = riskHits(liveFiles, edges, clusters);

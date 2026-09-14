@@ -37,6 +37,8 @@ test("stale pins: generate is byte-stable and hits retry + cross-service", async
   assert.ok(firstRisk.some((hit) =>
     hit.ruleId === "R2_CROSS_SERVICE" || hit.ruleId === "R3_RETRY_IDEMPOTENCY",
   ));
+  const echo = a.edges.filter((edge) => edge.kind === "echo");
+  assert.ok(echo.some((edge) => edge.token === "correlationId" && edge.crossService));
 });
 
 test("parent pins are not the file list", async () => {

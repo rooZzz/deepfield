@@ -12,8 +12,8 @@ export async function seedCheckoutWeb(dir: string): Promise<void> {
     "app/checkout/client/pay.ts": `import { createSession } from "@acme/checkout-api";
 import type { Cart } from "./types.ts";
 // contract: openapi.yaml
-export async function pay(cart: Cart, key: string): Promise<void> {
-  return createSession({ cart, currency: cart.currency, idempotencyKey: key });
+export async function pay(cart: Cart, key: string, correlationId: string): Promise<void> {
+  return createSession({ cart, currency: cart.currency, idempotencyKey: key, correlationId });
 }
 `,
     "app/checkout/client/types.ts": "export type Cart = { total: number; currency: string };\nconst cartFields = ['currency'];\n",
@@ -57,17 +57,25 @@ export async function retryPayment(send: () => Promise<void>): Promise<void> {
   }
 }
 `,
-    "src/checkout/session/dto.ts": "export type SessionDto = { cart: { total: number }; currency: string; idempotencyKey: string };\nconst sessionFields = ['currency', 'idempotencyKey'];\n",
+    "src/checkout/session/dto.ts": "export type SessionDto = { cart: { total: number }; currency: string; idempotencyKey: string; correlationId: string };\nconst sessionFields = ['currency', 'idempotencyKey', 'correlationId'];\n",
     "src/checkout/session/create.ts": `import type { SessionDto } from "./dto.ts";
 import { createIntent } from "@acme/payments-api";
 export async function createSession(body: SessionDto): Promise<void> {
-  await createIntent({ amount: body.cart.total, currency: body.currency });
+  await createIntent({ amount: body.cart.total, currency: body.currency, correlationId: body.correlationId });
 }
 `,
-    "src/checkout/http/headers.ts": "export const IDEMPOTENCY = \"idempotency-key\";\nexport function headerName(): string {\n  return IDEMPOTENCY;\n}\n",
-    "src/checkout/http/client.ts": `import { IDEMPOTENCY } from "./headers.ts";
-export function withKey(headers: Record<string, string>, key: string): Record<string, string> {
-  return { ...headers, [IDEMPOTENCY]: key };
+    "src/checkout/http/headers.ts": `export const IDEMPOTENCY = "idempotency-key";
+export const CORRELATION = "X-Correlation-Id";
+export function headerName(): string {
+  return IDEMPOTENCY;
+}
+export function correlationHeader(): string {
+  return CORRELATION;
+}
+`,
+    "src/checkout/http/client.ts": `import { IDEMPOTENCY, CORRELATION } from "./headers.ts";
+export function withKey(headers: Record<string, string>, key: string, correlationId: string): Record<string, string> {
+  return { ...headers, [IDEMPOTENCY]: key, [CORRELATION]: correlationId };
 }
 `,
     "contracts/openapi.yaml": "openapi: 3.0.0\ninfo:\n  title: checkout\n  version: \"2.0.0\"\npaths:\n  /session:\n    post:\n      summary: create with idempotencyKey\n",
@@ -81,20 +89,21 @@ export async function seedPayments(dir: string): Promise<void> {
     "src/payments/webhook/handler.ts": "export async function handleWebhook(): Promise<void> {}\n",
     "src/payments/webhook/verify.ts": "export function verify(): boolean { return true; }\n",
   }, {
-    "src/payments/intent/dto.ts": "export type IntentDto = { amount: number; currency: string };\nconst intentFields = ['amount', 'currency'];\n",
+    "src/payments/intent/dto.ts": "export type IntentDto = { amount: number; currency: string; correlationId: string };\nconst intentFields = ['amount', 'currency', 'correlationId'];\n",
     "src/payments/intent/create.ts": `import type { IntentDto } from "./dto.ts";
 import { writeEntry } from "@acme/ledger-svc";
 export async function createIntent(input: IntentDto): Promise<void> {
   const amount = input.amount;
   const currency = input.currency;
-  await writeEntry({ amount, currency });
+  await writeEntry({ amount, currency, correlationId: input.correlationId });
 }
 `,
     "src/payments/webhook/verify.ts": "export function verify(raw: string): { ok: boolean } {\n  return { ok: raw.length > 0 };\n}\n",
     "src/payments/webhook/handler.ts": `import { verify } from "./verify.ts";
-export async function handleWebhook(raw: string): Promise<void> {
+export async function handleWebhook(raw: string, headers: Record<string, string>): Promise<void> {
+  const correlationId = headers["X-Correlation-Id"];
   const event = verify(raw);
-  if (!event.ok) {
+  if (!event.ok || !correlationId) {
     throw new Error("webhook");
   }
 }
@@ -111,7 +120,7 @@ export async function seedLedger(dir: string): Promise<void> {
     "src/ledger/balance/format.ts": "export function formatMoney(n: number): string { return String(n); }\n",
     "src/ledger/balance/read.test.ts": "export function testRead(): void {}\n",
   }, {
-    "src/ledger/entries/schema.ts": "export type Entry = { amount: number; currency: string; source?: string };\nconst entryFields = ['amount', 'currency', 'source'];\n",
+    "src/ledger/entries/schema.ts": "export type Entry = { amount: number; currency: string; source?: string; correlationId?: string };\nconst entryFields = ['amount', 'currency', 'source', 'correlationId'];\n",
     "src/ledger/entries/write.ts": `import type { Entry } from "./schema.ts";
 export async function writeEntry(entry: Entry): Promise<void> {
   await db.transaction(async (tx) => {

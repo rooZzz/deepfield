@@ -50,12 +50,13 @@ test("a path hop prefers contract, then a cross-service import", () => {
   assert.equal(edgeBetweenClusters(doc, "c:1", "c:1"), undefined);
 });
 
-test("overview draws one stroke per cluster pair and prefers contract", () => {
+test("overview prefers contract over echo over import", () => {
   const doc = graph();
-  const wide = wideClusterEdges(doc);
-  assert.equal(wide.length, 2);
-  assert.equal(wide.find((edge) => edge.source === "c:1" && edge.target === "c:2")?.kind, "contract");
-  assert.equal(wide.some((edge) => edge.kind === "import" && edge.source === "c:1"), false);
+  assert.equal(wideClusterEdges(doc).length, 2);
+  doc.edges.push({ id: "e:echo", kind: "echo", fromId: "f:1", toId: "f:2", crossService: true, token: "correlationId" });
+  assert.equal(wideClusterEdges(doc).find((edge) => edge.source === "c:1" && edge.target === "c:2")?.kind, "contract");
+  doc.edges = doc.edges.filter((edge) => edge.kind !== "contract");
+  assert.equal(wideClusterEdges(doc).find((edge) => edge.source === "c:1" && edge.target === "c:2")?.kind, "echo");
 });
 
 test("path hops are the walk pairs, not a second edge kind", () => {

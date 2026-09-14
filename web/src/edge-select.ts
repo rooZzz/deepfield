@@ -9,6 +9,8 @@ export type WideEdge = {
   cross: 0 | 1;
 };
 
+const KIND_RANK: Record<GraphEdge["kind"], number> = { contract: 2, echo: 1, import: 0 };
+
 export function wideClusterEdges(graph: GraphDocument): WideEdge[] {
   const best = new Map<string, { source: string; target: string; kind: GraphEdge["kind"]; cross: boolean }>();
   for (const edge of graph.edges) {
@@ -21,10 +23,11 @@ export function wideClusterEdges(graph: GraphDocument): WideEdge[] {
     const target = from.id < to.id ? to.id : from.id;
     const ends = hopKey(from.id, to.id);
     const prev = best.get(ends);
+    const kind = !prev || KIND_RANK[edge.kind] > KIND_RANK[prev.kind] ? edge.kind : prev.kind;
     best.set(ends, {
       source,
       target,
-      kind: prev?.kind === "contract" || edge.kind === "contract" ? "contract" : edge.kind,
+      kind,
       cross: Boolean(prev?.cross || edge.crossService),
     });
   }
@@ -48,7 +51,9 @@ export function tapEdgeId(graph: GraphDocument, drawn: DrawnTap): string | undef
   if (graph.edges.some((edge) => edge.id === drawn.id)) {
     return drawn.id;
   }
-  const kind = drawn.kind === "import" || drawn.kind === "contract" ? drawn.kind : undefined;
+  const kind = drawn.kind === "import" || drawn.kind === "contract" || drawn.kind === "echo"
+    ? drawn.kind
+    : undefined;
   return edgeBetweenClusters(graph, drawn.source, drawn.target, kind)?.id;
 }
 
@@ -72,6 +77,7 @@ export function edgeBetweenClusters(
     return Boolean(src && tgt && ((src === from && tgt === to) || (src === to && tgt === from)));
   });
   return hits.find((edge) => edge.kind === "contract")
+    ?? hits.find((edge) => edge.kind === "echo")
     ?? hits.find((edge) => edge.crossService)
     ?? hits[0];
 }

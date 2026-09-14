@@ -110,7 +110,7 @@ function hunkSlice(file: FileNode, from: number, to: number, pad: number, mark: 
 function edgeBlock(graph: GraphDocument, edge: GraphEdge): HTMLElement {
   const wrap = el("div");
   wrap.append(el("div", { class: "ctx-head" }, [
-    el("div", { class: "kicker" }, [`${edge.kind} edge`]),
+    el("div", { class: "kicker" }, [edge.token ? `${edge.kind} · ${edge.token}` : `${edge.kind} edge`]),
     el("div", { class: "mono" }, [`${endLabel(graph, edge.fromId)} → ${endLabel(graph, edge.toId)}`]),
     el("div", { class: "mono dim" }, [edge.crossService ? "crosses a service boundary" : "within one service"]),
   ]));

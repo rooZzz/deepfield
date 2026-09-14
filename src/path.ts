@@ -20,7 +20,7 @@ export function reviewPaths(
     const item: Scored = {
       id: cluster.id,
       severity: maxSeverity(cluster.id, risks),
-      contract: hasKind(cluster, edges, "contract"),
+      contract: hasKind(cluster, edges, "contract") || hasKind(cluster, edges, "echo"),
       cross: hasCross(cluster, edges),
       behavioural: cluster.memberIds.some((id) => filesById.get(id)?.class === "behavioural"),
     };
