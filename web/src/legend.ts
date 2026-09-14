@@ -32,14 +32,15 @@ export function renderLegend(pane: HTMLElement, open: boolean, onClose: () => vo
   const map: Array<[string, string]> = [
     ["J K", "review path next / prev"],
     ["↑ ↓", "file in path scope"],
-    ["R", "mark file reviewed"],
-    ["Space", "mark & next"],
+    ["R", "done on this file"],
+    ["Space", "done and next"],
     ["Enter", "expand cluster"],
     ["Esc", "collapse"],
     ["F", "behavioural only / all"],
     ["P", "whole scene"],
+    ["follow", "camera tracks the file cursor"],
     ["+ −", "zoom in / out"],
-    ["⌘↵", "stage remark"],
+    ["⌘↵", "stage note"],
   ];
   for (const [k, v] of map) {
     keys.append(el("span", { style: "color:var(--color-neutral-400)" }, [k]), el("span", {}, [v]));

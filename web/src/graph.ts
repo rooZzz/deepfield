@@ -223,9 +223,10 @@ function applyLod(cy: Core): void {
 }
 
 function expose(cy: Core): void {
-  (globalThis as { __deepfield?: { zoom: () => number; filesVisible: () => boolean } }).__deepfield = {
+  (globalThis as { __deepfield?: { zoom: () => number; filesVisible: () => boolean; pan: () => { x: number; y: number } } }).__deepfield = {
     zoom: () => cy.zoom(),
     filesVisible: () => cy.zoom() >= LOD.files,
+    pan: () => cy.pan(),
   };
 }
 

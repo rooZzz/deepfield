@@ -65,6 +65,7 @@
 }
 .cam-stack button:last-child { border-bottom: 0; }
 .cam-stack button:hover { color: var(--color-accent-300); background: rgba(145, 132, 217, 0.1); }
+.cam-stack button[aria-pressed="true"] { color: var(--color-accent-300); background: rgba(145, 132, 217, 0.14); }
 .cam-stack button:disabled { opacity: 0.32; }
 .cam-stack svg { display: block; }
 #lod {

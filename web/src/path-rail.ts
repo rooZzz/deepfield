@@ -16,17 +16,17 @@ export function renderPath(
   onDrag: (e: PointerEvent) => void,
 ): HTMLElement {
   if (!open) {
-    const fold = el("button", { type: "button", class: "side-fold", title: "Expand review path" }, ["Review path ›"]);
+    const fold = el("button", { type: "button", class: "side-fold", title: "expand review path" }, ["review path ›"]);
     fold.addEventListener("click", onToggle);
     return fold;
   }
-  const grip = el("div", { class: "resize rail", title: "Drag to resize" });
+  const grip = el("div", { class: "resize rail", title: "drag to resize" });
   grip.addEventListener("pointerdown", onDrag);
-  const fold = el("button", { type: "button", class: "rail-fold", title: "Collapse" }, ["‹"]);
+  const fold = el("button", { type: "button", class: "rail-fold", title: "collapse" }, ["‹"]);
   fold.addEventListener("click", onToggle);
   const head = el("div", { class: "rail-head" }, [
     el("div", { class: "rail-kicker-row" }, [
-      el("span", { class: "kicker" }, ["Review path"]),
+      el("span", { class: "kicker" }, ["review path"]),
       fold,
     ]),
   ]);

@@ -27,6 +27,7 @@ export const app = {
   insW: 480,
   statusLine: "",
   overview: true,
+  followFiles: true,
   revealCursor: false,
 };
 

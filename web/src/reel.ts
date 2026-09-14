@@ -26,8 +26,9 @@ export function renderReelMeta(
     type: "button",
     class: "pill mark-btn",
     style: `color:${reviewed ? ADD : "var(--color-accent)"};border-color:currentColor;`,
-    title: "R — mark reviewed",
-  }, [reviewed ? "Reviewed" : "Mark"]);
+    title: "R — done",
+    "aria-pressed": reviewed ? "true" : "false",
+  }, ["done"]);
   prev.addEventListener("click", onPrev);
   next.addEventListener("click", onNext);
   mark.addEventListener("click", onMark);
@@ -82,7 +83,7 @@ export function renderReel(
     pane.append(block);
   });
   if (!rows.length) {
-    pane.append(el("p", { class: "dim", style: "padding:16px;" }, ["Nothing in this scope."]));
+    pane.append(el("p", { class: "dim", style: "padding:16px;" }, ["nothing in this scope."]));
   }
 }
 
@@ -112,7 +113,7 @@ function fileBar(
   const tick = el("button", {
     type: "button",
     class: "file-tick",
-    title: "R — mark reviewed",
+    title: "R — done",
     "aria-pressed": done ? "true" : "false",
     style: `border:1px solid ${done ? ADD : cur ? "var(--color-accent-600)" : "var(--color-neutral-800)"}`,
   });
@@ -120,12 +121,12 @@ function fileBar(
     event.stopPropagation();
     onToggle(row.file.id);
   });
-  const remark = el("button", { type: "button", class: "pill" }, ["remark", count ? ` ${count}` : ""]);
-  remark.addEventListener("click", (event) => {
+  const note = el("button", { type: "button", class: "pill" }, ["note", count ? ` ${count}` : ""]);
+  note.addEventListener("click", (event) => {
     event.stopPropagation();
     onRemarkFile(row.file.id);
   });
-  const end = el("span", { class: "file-end" }, [remark]);
+  const end = el("span", { class: "file-end" }, [note]);
   bar.append(tick, el("span", { class: "mono file-path", title: path }, [path]), end);
   if (chips.length) {
     bar.append(chipRow(chips));

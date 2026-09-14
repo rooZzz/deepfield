@@ -32,6 +32,11 @@ test("shell shows path, graph, and a full-height review pane", async ({ page }) 
   const railChips = await page.locator("#path-pane .path-chip").count();
   expect(fileChips + railChips).toBeGreaterThan(0);
   await expect(page.locator("#review-nav")).toBeVisible();
+  await expect(page.locator("#review-nav .mark-btn")).toHaveText("done");
+  await expect(page.locator("#note-scope")).toHaveText("note");
+  await expect(page.locator("#topbar #approve")).toBeVisible();
+  await expect(page.locator("#inspector #approve")).toHaveCount(0);
+  await expect(page.locator("#request-changes")).toHaveCount(0);
   await expect(page.locator("#ins-brief .ins-title")).toBeVisible();
   await expect(page.locator("#inspector .hit")).toHaveCount(0);
   const diff = await page.locator("#reel-scroll").innerText();
@@ -40,13 +45,15 @@ test("shell shows path, graph, and a full-height review pane", async ({ page }) 
   await expect(page.locator(".hud-chip")).toHaveCount(0);
 });
 
-test("request changes writes inbox remarks and verdict", async ({ page }) => {
+test("request changes writes inbox notes and verdict from the staged sheet", async ({ page }) => {
   await page.goto("http://127.0.0.1:4173/");
   await page.locator("#path-pane .path-step").first().click();
-  await page.locator("#remark-scope").click();
+  await page.locator("#note-scope").click();
   await page.locator("#reel-scroll textarea").fill("Retry must be idempotent.");
   await page.locator('#reel-scroll button[type="submit"]').click();
-  await page.locator("#request-changes").click();
+  await expect(page.locator("#staged-chip")).toHaveText("1 note");
+  await page.locator("#staged-chip").click();
+  await page.locator("#staged-submit").click();
   await expect(page.locator("#status")).toContainText("inbox sent");
   const res = await page.request.get("http://127.0.0.1:4173/.deepfield/inbox.json");
   const inbox = await res.json();
@@ -57,12 +64,22 @@ test("request changes writes inbox remarks and verdict", async ({ page }) => {
   expect(inbox.verdict.kind).toBe("request-changes");
 });
 
+test("approve from the top bar writes a verdict", async ({ page }) => {
+  await page.goto("http://127.0.0.1:4173/");
+  await expect(page.locator("#inspector #approve")).toHaveCount(0);
+  await page.locator("#topbar #approve").click();
+  await expect(page.locator("#status")).toContainText("approved");
+  const res = await page.request.get("http://127.0.0.1:4173/.deepfield/inbox.json");
+  const inbox = await res.json();
+  expect(inbox.verdict.kind).toBe("approve");
+});
+
 test("keyboard walks the path", async ({ page }) => {
   await page.goto("http://127.0.0.1:4173/");
   const current = page.locator('#path-pane .path-step[aria-current="true"]');
   await page.keyboard.press("j");
   await expect(current).toBeVisible();
-  await expect(page.locator("#inspector")).not.toContainText("Select a cluster");
+  await expect(page.locator("#inspector")).not.toContainText("select a cluster");
 });
 
 test("zoom reveals file nodes", async ({ page }) => {

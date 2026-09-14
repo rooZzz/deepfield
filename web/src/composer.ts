@@ -20,8 +20,8 @@ export function remarkCard(
     ]),
     el("div", { style: "margin-top:3px;font-size:12px;" }, [remark.body]),
   );
-  const edit = el("button", { type: "button", style: "border:0;background:transparent;padding:0;color:var(--color-neutral-400);font-size:10.5px;" }, ["Edit"]);
-  const del = el("button", { type: "button", style: "border:0;background:transparent;padding:0;color:var(--color-neutral-400);font-size:10.5px;" }, ["Delete"]);
+  const edit = el("button", { type: "button", style: "border:0;background:transparent;padding:0;color:var(--color-neutral-400);font-size:10.5px;" }, ["edit"]);
+  const del = el("button", { type: "button", style: "border:0;background:transparent;padding:0;color:var(--color-neutral-400);font-size:10.5px;" }, ["delete"]);
   edit.addEventListener("click", () => onEdit(remark.id));
   del.addEventListener("click", () => onDelete(remark.id));
   card.append(el("div", { style: "margin-top:6px;display:flex;gap:10px;" }, [edit, del]));
@@ -37,7 +37,7 @@ export function composer(
   onCancel: () => void,
 ): HTMLElement {
   const form = el("form", { class: "composer remark", style: "border:1px solid var(--color-accent-700);" });
-  const area = el("textarea", { rows: "2", placeholder: "What needs addressing here?" });
+  const area = el("textarea", { rows: "2", placeholder: "what needs addressing here?" });
   area.value = draft;
   area.addEventListener("input", () => onDraft(area.value));
   area.addEventListener("keydown", (event) => {
@@ -46,9 +46,9 @@ export function composer(
       onSubmit();
     }
   });
-  const cancel = el("button", { type: "button", style: "border:0;background:transparent;padding:0;color:var(--color-neutral-500);font-size:10.5px;" }, ["Cancel"]);
+  const cancel = el("button", { type: "button", style: "border:0;background:transparent;padding:0;color:var(--color-neutral-500);font-size:10.5px;" }, ["cancel"]);
   cancel.addEventListener("click", onCancel);
-  const submit = el("button", { type: "submit", class: "btn-primary", style: "font-size:11.5px;padding:5px 11px;" }, ["Stage remark"]);
+  const submit = el("button", { type: "submit", class: "btn-primary", style: "font-size:11.5px;padding:5px 11px;" }, ["stage"]);
   form.append(
     el("div", { style: "display:flex;justify-content:space-between;margin-bottom:6px;" }, [
       el("span", { class: "mono accent", style: "font-size:10px;" }, [`→ ${label}`]),

@@ -6,7 +6,7 @@ import { paint, type PaintFns } from "./paint.ts";
 import { dragIns } from "./resize.ts";
 import { app, graphView } from "./state.ts";
 
-export function bindUi(fns: PaintFns, requestChanges: () => void, approve: () => void): void {
+export function bindUi(fns: PaintFns, approve: () => void): void {
   requireEl("#legend-btn").addEventListener("click", () => {
     app.legend = !app.legend;
     paint(fns);
@@ -16,18 +16,24 @@ export function bindUi(fns: PaintFns, requestChanges: () => void, approve: () =>
     paint(fns);
   });
   requireEl("#ins-grip").addEventListener("pointerdown", (event) => dragIns(event));
-  requireEl("#remark-scope").addEventListener("click", () => {
+  requireEl("#note-scope").addEventListener("click", () => {
     app.pending = { kind: "scope-compose" };
     app.draft = "";
     paint(fns);
   });
-  requireEl("#request-changes").addEventListener("click", () => void requestChanges());
   requireEl("#approve").addEventListener("click", () => void approve());
   requireEl("#cam-in").addEventListener("click", () => graphView?.zoomBy(CAMERA.step));
   requireEl("#cam-out").addEventListener("click", () => graphView?.zoomBy(1 / CAMERA.step));
   requireEl("#cam-frame").addEventListener("click", () => {
     app.overview = false;
     graphView?.frame(false);
+  });
+  requireEl("#cam-follow").addEventListener("click", () => {
+    app.followFiles = !app.followFiles;
+    paint(fns);
+    if (app.followFiles && app.cursorId) {
+      fns.setCursor(app.cursorId, false);
+    }
   });
   requireEl("#cam-fit").addEventListener("click", fns.wholePath);
   requireEl("#reel-scroll").addEventListener("scroll", () => {

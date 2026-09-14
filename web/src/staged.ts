@@ -23,10 +23,8 @@ export function renderStaged(
   for (const remark of remarks) {
     list.append(stagedRow(remark, graph, onEdit, onDelete));
   }
-  requireEl("#staged-count").textContent = `${remarks.length} ${remarks.length === 1 ? "remark" : "remarks"}`;
-  const submit = requireEl("#staged-submit");
-  submit.textContent = `Submit ${remarks.length} remark${remarks.length === 1 ? "" : "s"} to agent`;
-  submit.onclick = onSubmit;
+  requireEl("#staged-count").textContent = `${remarks.length} ${remarks.length === 1 ? "note" : "notes"}`;
+  requireEl("#staged-submit").onclick = onSubmit;
   requireEl("#staged-close").onclick = onClose;
 }
 
@@ -40,8 +38,8 @@ function stagedRow(
   const live = withDrift(remark, file);
   const when = new Date(remark.createdAt).toLocaleString();
   const note = el("div", { class: "staged-note" });
-  const edit = el("button", { type: "button", class: "staged-act" }, ["Edit"]);
-  const del = el("button", { type: "button", class: "staged-act" }, ["Delete"]);
+  const edit = el("button", { type: "button", class: "staged-act" }, ["edit"]);
+  const del = el("button", { type: "button", class: "staged-act" }, ["delete"]);
   edit.addEventListener("click", () => onEdit(remark.id));
   del.addEventListener("click", () => onDelete(remark.id));
   note.append(

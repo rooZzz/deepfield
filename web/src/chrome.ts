@@ -33,7 +33,7 @@ export function renderFilters(
 }
 
 export function renderProgress(done: number, total: number): void {
-  requireEl("#review-label").textContent = `${done} / ${total} reviewed`;
+  requireEl("#review-label").textContent = `${done} / ${total} done`;
   const bar = requireEl("#review-bar");
   const pct = total ? (done / total) * 100 : 0;
   bar.style.width = `${pct}%`;
@@ -46,6 +46,10 @@ export function renderLod(zoom: number, filesVisible: boolean): void {
   requireEl("#lod").textContent = `${zoom.toFixed(2)}× · ${label}`;
   requireEl("#cam-in").toggleAttribute("disabled", zoom >= CAMERA.max - 1e-6);
   requireEl("#cam-out").toggleAttribute("disabled", zoom <= CAMERA.min + 1e-6);
+}
+
+export function renderFollow(on: boolean): void {
+  requireEl("#cam-follow").setAttribute("aria-pressed", on ? "true" : "false");
 }
 
 export function renderVeil(show: boolean, line: string): void {
@@ -63,6 +67,6 @@ export function renderEmpty(show: boolean, text: string): void {
 export function renderStagedChip(count: number, onOpen: () => void): void {
   const chip = requireEl("#staged-chip");
   chip.hidden = count === 0;
-  chip.textContent = `${count} remark${count === 1 ? "" : "s"} staged · review`;
+  chip.textContent = `${count} note${count === 1 ? "" : "s"}`;
   chip.onclick = onOpen;
 }

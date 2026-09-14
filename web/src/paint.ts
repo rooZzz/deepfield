@@ -1,5 +1,5 @@
 import { bucketOf, BUCKETS, type BucketId } from "./buckets.ts";
-import { renderEmpty, renderFilters, renderProgress, renderStagedChip, renderStatus, renderVeil } from "./chrome.ts";
+import { renderEmpty, renderFilters, renderFollow, renderProgress, renderStagedChip, renderStatus, renderVeil } from "./chrome.ts";
 import { requireEl } from "./dom.ts";
 import { ensureHighlighter } from "./highlight.ts";
 import { focusHits } from "./inspect-hits.ts";
@@ -28,7 +28,7 @@ export type PaintFns = {
   clearPending: () => void;
   editRemark: (id: string) => void;
   deleteRemark: (id: string) => void;
-  submitRemarks: () => void;
+  requestChanges: () => void;
   moveCursor: (d: number) => void;
   mark: () => void;
   wholePath: () => void;
@@ -48,6 +48,7 @@ export function paint(fns: PaintFns): void {
   renderFilters(app.hidden, counts, files(graph).filter((file) => app.hidden.includes(bucketOf(file))).length, fns.toggleBucket);
   const whole = pathProgress(graph, app.review.reviewed);
   renderProgress(whole.done, whole.total);
+  renderFollow(app.followFiles);
   renderStagedChip(app.remarks.length, () => {
     app.popover = true;
     paint(fns);
@@ -92,7 +93,7 @@ export function paint(fns: PaintFns): void {
   renderStaged(app.remarks, graph, app.popover, () => {
     app.popover = false;
     paint(fns);
-  }, fns.submitRemarks, fns.editRemark, fns.deleteRemark);
+  }, fns.requestChanges, fns.editRemark, fns.deleteRemark);
   if (app.focusId) {
     graphView?.select(app.focusId);
   }

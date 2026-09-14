@@ -335,7 +335,7 @@ spec: [ux.md](ux.md).
 - Size from behavioural weight. Positions from ids (stable across generate).
 - App shell: top bar, left review path, centre graph (full height),
   right review pane (compact title + hunks). Graph is never covered by floating chrome
-  (path rail, review pane, FABs). Staged-remark review is a full-viewport
+  (path rail, review pane, FABs). Staged-notes review is a full-viewport
   sheet, not a dialog on the map.
 
 Literal 3D is a later camera on the same scene (`ux.md` §16). Do not block

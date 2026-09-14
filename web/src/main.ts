@@ -14,7 +14,7 @@ import { app, graphView, setGraphView } from "./state.ts";
 
 const fns: PaintFns = {
   goStep, setCursor, selectId, toggleBucket, toggleReviewed, pickFile, pickLine,
-  stage, clearPending, editRemark, deleteRemark, submitRemarks, moveCursor, mark, wholePath, scopeName, cursorStep,
+  stage, clearPending, editRemark, deleteRemark, requestChanges, moveCursor, mark, wholePath, scopeName, cursorStep,
 };
 
 async function boot(): Promise<void> {
@@ -41,7 +41,7 @@ async function boot(): Promise<void> {
   if (app.focusId) {
     graphView?.select(app.focusId);
   }
-  bindUi(fns, () => void requestChanges(), () => void approve());
+  bindUi(fns, () => void approve());
   paint(fns);
 }
 
@@ -108,7 +108,7 @@ function wholePath(): void {
 
 function setCursor(id: string, reveal = true): void {
   app.cursorId = id;
-  if (scopeFiles(app.graph, app.scope, app.hidden, app.pathIndex).some((row) => row.file.id === id)) {
+  if (app.followFiles && scopeFiles(app.graph, app.scope, app.hidden, app.pathIndex).some((row) => row.file.id === id)) {
     graphView?.focus(id);
   }
   paintCursor(fns, reveal);
@@ -237,7 +237,7 @@ async function submitRemarks(): Promise<void> {
 
 async function requestChanges(): Promise<void> {
   if (!app.remarks.length) {
-    app.statusLine = "stage a remark before requesting changes";
+    app.statusLine = "stage a note first";
     paint(fns);
     return;
   }
@@ -247,7 +247,7 @@ async function requestChanges(): Promise<void> {
 
 async function approve(): Promise<void> {
   if (app.remarks.length) {
-    app.statusLine = "discard or submit remarks before approving";
+    app.statusLine = "send or drop notes before approve";
     paint(fns);
     return;
   }

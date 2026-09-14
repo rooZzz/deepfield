@@ -55,7 +55,7 @@ function hunkLineEl(
     ? el("button", {
       type: "button",
       class: cls,
-      title: "Click to remark on this line · shift-click to extend",
+      title: "click to note this line · shift-click to extend",
     })
     : el("div", { class: cls });
   node.append(

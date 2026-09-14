@@ -22,7 +22,7 @@ export function renderInspector(
   const kicker = route ? "review path" : edge ? `${edge.kind} edge` : node?.kind ?? "review";
   const title = route ? pathCard(graph, pathAt(graph, pathIndex)).name : titleOf(graph, focusId, edge);
   const meta = route ? pathMeta(graph, pathIndex) : metaOf(graph, focusId, edge);
-  const collapse = el("button", { type: "button", title: "Collapse", class: "rail-fold" }, ["›"]);
+  const collapse = el("button", { type: "button", title: "collapse", class: "rail-fold" }, ["›"]);
   collapse.addEventListener("click", onToggle);
   const copy = el("div", { class: "ins-copy" }, [
     el("span", { class: "kicker mono" }, [kicker]),
@@ -44,7 +44,7 @@ function titleOf(graph: GraphDocument, id: string | null, edge: GraphEdge | unde
   }
   const node = id ? byId(graph, id) : undefined;
   if (!node) {
-    return "Select a cluster";
+    return "select a cluster";
   }
   if (node.kind === "cluster") {
     return node.title;

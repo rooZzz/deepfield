@@ -127,7 +127,7 @@ else. A service, cluster, or edge does the same at a zoom that fits
 that scope (cluster → file LOD; service → territory; edge → **both
 endpoint clusters and the interconnect**, never a hidden file or a
 single end). Import, contract, and path-hop lines on the map all select
-that way. Paint (ticks, remarks) does not reset the camera. Clicking
+that way. Paint (ticks, notes) does not reset the camera. Clicking
 empty field / `P` fits the whole scene and lights every path. Click a
 file (once visible) to load it in the review pane.
 
@@ -151,15 +151,14 @@ Cytoscape (preset layout, wheel zoom, zoom LOD). Chrome is structural.
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
-│ TOP   mark  DEEPFIELD  · status  ·  n/N reviewed  ·  ?          │
+│ TOP   deepfield  · status  ·  notes  ·  n/n done  ·  approve  ·  ?│
 ├─────────────────────────────────────────────────────────────────┤
 │ INCLUDE   behavioural  tests  boilerplate  docs  generated      │
 ├──────────┬──────────────────────────────────┬───────────────────┤
 │ REVIEW   │                                  │ REVIEW            │
 │ PATHS    │            GRAPH                 │ title · summary,  │
 │ list     │     (full height constellation)  │ reading cursor,   │
-│          │                                  │ hunks in scope,   │
-│          │                                  │ approve / request │
+│          │                                  │ hunks in scope    │
 └──────────┴──────────────────────────────────┴───────────────────┘
 ```
 
@@ -170,10 +169,11 @@ footer; keyboard hints sit as a thin strip at the foot of that pane.
 
 ### Top bar
 
-Brand mark (quiet constellation) + “Deepfield”. Status dot and line. Staged-remark chip
-when anything is staged. Review progress for **every file on every
-review path** (not the filtered file list). `?` opens the legend. No
-avatar, no extra nav.
+Brand mark (quiet constellation) + “Deepfield”. Status dot and line.
+Staged-note chip when anything is staged (opens the staged sheet).
+Review progress for **every file on every review path** (not the
+filtered file list). **approve** is a top-bar command for the whole
+change. `?` opens the legend. No avatar, no extra nav.
 
 ### Filter strip
 
@@ -192,7 +192,7 @@ Collapsible, resizable. No walk headline, no assumed service flow, no
   walk order). Template over graph facts, not a nickname.
 - **summary** — fact template: cluster count and file count.
 - **risk chips** — unique one-word rule labels on that path.
-- **progress** — reviewed files / files on that path.
+- **progress** — done files / files on that path.
 
 Do not list services or `from {repo}` on the row. Which checkouts a path
 touches becomes clear when it is selected (map + review pane). `J` / `K`
@@ -211,9 +211,13 @@ toward the cursor; more detail in. Clicking empty field returns to the
 whole scene.
 
 Quiet **camera chrome** sits in the lower-left of the field: zoom in,
-zoom out, frame the current scope, fit the whole scene. The LOD readout
-lives under that stack. This is map instrumentation (glass, hairline,
-mono), not a FAB and not chrome that covers the constellation.
+zoom out, frame the current scope, follow files, fit the whole scene.
+Follow files is **on** by default: walking files with `↑` `↓` or the
+hunk list moves the camera along the review path. Toggle it off to keep
+the selected path lit without the camera chasing the file cursor.
+Selecting a review path still highlights that route and frames it. The
+LOD readout lives under that stack. This is map instrumentation (glass,
+hairline, mono), not a FAB and not chrome that covers the constellation.
 
 ### Right pane — review
 
@@ -225,10 +229,12 @@ rows:
    strip (truncated). Collapse control. No facts definition list, no
    risk-hit cards, no “edges from here” list (the map already shows
    edges).
-2. **Reading tools** — one row: previous / next, `n / N`, mark reviewed,
-   remark / request changes / approve. This row does **not** include the
-   current file path. Path length must not change the control size.
-   `n / N` is tabular and fixed-width.
+2. **Reading tools** — one row: previous / next, `n / N`, done, note.
+   This row does **not** include the current file path. Path length must
+   not change the control size. `n / N` is tabular and fixed-width.
+   Buttons are short and lowercase. **done** ticks the current file
+   (same as `R`). **note** opens a composer on this scope. Do not put
+   request or approve here.
 
 The reading cursor and the hunk list stay in sync. `↑` `↓` (and the
 prev / next pills) scroll the current file to the top of the hunk list.
@@ -259,17 +265,18 @@ pane or wrap. The hunk scrolls horizontally as a unit; marker and line
 number stay pinned. Add / delete tint is the hunk width, not the length
 of that line.
 
-Click a line to remark (shift-click extends). `↑` `↓` move the cursor
-inside the context. `R` marks reviewed. Space marks and advances.
+Click a line to note it (shift-click extends). `↑` `↓` move the cursor
+inside the context. `R` ticks the file done. Space ticks and advances.
 
-**Approve** and **Request changes** sit on this pane. Request changes
-submits staged remarks to the inbox. Approve writes a verdict and
-refuses if remarks are still staged.
+**approve** sits in the top bar. It writes a verdict for the whole
+change and refuses if notes are still staged. **request changes** is
+the footer of the staged-notes sheet, after the reviewer has read what
+they staged. Neither action lives on a review path.
 
 ### No
 
 - Overlays that sit on the map (floating path rail, floating inspector).
-  Staged-remark review is a full-viewport sheet, not this. The camera
+  Staged-notes review is a full-viewport sheet, not this. The camera
   cluster is field instrumentation, not an overlay of that kind.
 - GitHub PR clone as the home screen
 - Tabs “Graph | Files | Comments | Settings”
@@ -338,7 +345,7 @@ mystery.
 
 ## 6. Review pane
 
-Always the same skeleton: **compact title, then the hunks**. Remarks
+Always the same skeleton: **compact title, then the hunks**. Notes
 stage on the hunks and the scope composer in this pane. Rule chips live
 on the sticky file header, not in a hit list above the diff.
 
@@ -373,21 +380,20 @@ have the UI ask a model.
 
 ---
 
-## 7. Remarks, review, and apply
+## 7. Notes, review, and apply
 
-Remarks **stage locally**, then flush to `.deepfield/inbox.json`. Nothing
-reaches the agent until Request changes (or an explicit submit of the
-staged set).
+Notes **stage locally**, then flush to `.deepfield/inbox.json`. Nothing
+reaches the agent until request changes from the staged sheet.
 
 ### Scope
 
-A remark is written against a **scope key**: one review path, one service, one
+A note is written against a **scope key**: one review path, one service, one
 cluster, one edge, one file, or a line range. The review pane only
-shows remarks whose scope key matches the scope the reviewer is in now.
+shows notes whose scope key matches the scope the reviewer is in now.
 
 ### Anchors
 
-Line remarks store the **text they were written against**, not only a
+Line notes store the **text they were written against**, not only a
 line number. After regenerate, relocate:
 
 - same text at the same offset → live
@@ -396,11 +402,11 @@ line number. After regenerate, relocate:
 
 ### Author and time
 
-Every remark shows author and timestamp.
+Every note shows author and timestamp.
 
-### Reviewed
+### Done
 
-`R` / the tick marks a file reviewed. The tick is centred in its box.
+`R` / the tick / **done** ticks a file. The tick is centred in its box.
 Each file’s header sticks to the top of the hunk list until that file’s hunks
 have scrolled away — headers do not stack on top of each other. Counts
 in the top bar and review paths use the **unfiltered files**. A new
@@ -412,17 +418,17 @@ change the denominator.
 - Plain text. `Cmd-Enter` stages. Edit / delete while staged.
 - Pins on the map: a count badge, dashed while staged.
 
-### Staged review
+### Staged notes
 
-The staged-remarks surface is a **full-viewport sheet**, not a centred
+The staged-notes surface is a **full-viewport sheet**, not a centred
 dialog. Open it from the top-bar chip. Esc closes. The graph is not
 visible underneath — this is a review mode, not floating chrome on the
 map.
 
-**One remark per row.** Each row is full width: the **target inline** on
-the left, the remark on the right.
+**One note per row.** Each row is full width: the **target inline** on
+the left, the note on the right.
 
-| Remark kind | Inline target |
+| Note kind | Inline target |
 | --- | --- |
 | line / lines | file path plus the hunk excerpt, marked lines picked, syntax-coloured like the review pane |
 | file | file path, class, change, hunk (capped) |
@@ -431,15 +437,16 @@ the left, the remark on the right.
 | service | repo, files in that checkout |
 | review path | path name, summary, risk chips, cluster titles in walk order |
 
-Author, timestamp, drift, edit, and delete sit with the remark body.
-Submit flushes the staged set to the inbox.
+Author, timestamp, drift, edit, and delete sit with the note body.
+The footer is **request changes**: it flushes the staged set to the
+inbox and sets `verdict: request-changes`.
 
 ### Terminal
 
-- **Request changes** — writes staged remarks as inbox `pending` items
-  and sets `verdict: request-changes`.
-- **Approve** — writes `verdict: approve`. Blocked while remarks are
-  still staged.
+- **request changes** — staged sheet only. Writes staged notes as inbox
+  `pending` items and sets `verdict: request-changes`.
+- **approve** — top bar only. Writes `verdict: approve`. Blocked while
+  notes are still staged.
 
 The skill loop is still apply. Deepfield does not click GitHub Approve.
 
@@ -539,18 +546,19 @@ we do not shrink type to fit 200 labels.
 | scroll / pinch | zoom toward cursor |
 | camera `+` `−` | zoom toward field centre |
 | camera frame | frame current scope (`Enter`) |
+| camera follow | tie the camera to file browsing (on by default) |
 | camera fit | whole scene (`P`) |
 | click cluster / file / pin / edge | rescope |
 | `J` `K` | next / previous review path |
 | `↑` `↓` or `[` `]` | file in current scope |
-| `R` | mark file reviewed |
-| `Space` | mark and next |
+| `R` | done on this file |
+| `Space` | done and next |
 | `Enter` | expand cluster (file LOD) |
 | `Esc` | close legend / cancel composer / collapse |
 | `F` | behavioural only / all buckets |
 | `P` | whole scene |
 | `+` `=` / `−` | zoom in / out |
-| `Cmd-Enter` in composer | stage remark |
+| `Cmd-Enter` in composer | stage note |
 | `?` | legend |
 
 Every control is a semantic `button` / `textarea` / `form`. Keyboard
