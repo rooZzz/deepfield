@@ -1,0 +1,21 @@
+.hunk-git {
+  align-self: stretch;
+  min-width: 100%;
+}
+.hunk-git > .hunk-line { min-width: 100%; }
+.hunk-git > summary {
+  display: flex;
+  cursor: pointer;
+  list-style: none;
+}
+.hunk-git > summary::-webkit-details-marker { display: none; }
+.hunk-caret {
+  width: 0;
+  height: 0;
+  justify-self: center;
+  border-style: solid;
+  border-width: 4px 0 4px 6px;
+  border-color: transparent transparent transparent var(--color-neutral-500);
+}
+.hunk-git[open] > summary .hunk-caret { transform: rotate(90deg); }
+.hunk-git > summary:hover { background: color-mix(in srgb, var(--color-accent) 12%, #1f2232); }

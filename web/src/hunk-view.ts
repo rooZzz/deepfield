@@ -1,7 +1,7 @@
 import type { FileNode } from "../../src/types.ts";
 import { el } from "./dom.ts";
 import { tokensForHunk, type TokenSpan } from "./highlight.ts";
-import { hunkRows, lineKind, lineSign, sourceOfLine } from "./hunk.ts";
+import { gitHeaderEnd, hunkRows, lineKind, lineSign, sourceOfLine } from "./hunk.ts";
 
 export type HunkPaint = {
   start: number;
@@ -30,17 +30,56 @@ export function renderHunkBody(file: FileNode, paint: HunkPaint): HTMLElement {
   const wrap = el("div", { class: "hunk-body" });
   const rows = hunkRows(file);
   const tokens = file.hunk ? tokensForHunk(file.hunk, file.path) : null;
-  for (let n = paint.start; n <= paint.end; n++) {
+  const headerEnd = gitHeaderEnd(rows);
+  let n = paint.start;
+  if (n === 1 && headerEnd > 1 && paint.end >= 1) {
+    wrap.append(gitHeaderFold(rows, tokens, paint, Math.min(headerEnd, paint.end)));
+    n = headerEnd + 1;
+  }
+  appendLines(wrap, rows, tokens, paint, n, paint.end);
+  return wrap;
+}
+
+function gitHeaderFold(
+  rows: string[],
+  tokens: TokenSpan[][] | null,
+  paint: HunkPaint,
+  headerEnd: number,
+): HTMLElement {
+  const box = el("details", { class: "hunk-git" });
+  const sum = el("summary", { class: "hunk-line meta" });
+  sum.append(
+    el("span", { class: "hunk-gutter" }, [
+      el("span", { class: "hunk-caret", "aria-hidden": "true" }),
+      el("span", { class: "dim hunk-n" }, [""]),
+      el("span", { class: "hunk-sign" }, [""]),
+    ]),
+    el("span", { class: "hunk-code" }, [rows[0] || " "]),
+  );
+  box.append(sum);
+  paint.afterLine?.(1, box);
+  appendLines(box, rows, tokens, paint, 2, headerEnd);
+  return box;
+}
+
+function appendLines(
+  host: HTMLElement,
+  rows: string[],
+  tokens: TokenSpan[][] | null,
+  paint: HunkPaint,
+  from: number,
+  to: number,
+): void {
+  for (let n = from; n <= to; n++) {
     const line = rows[n - 1] ?? "";
-    wrap.append(hunkLineEl(line, n, tokens?.[n - 1], {
+    host.append(hunkLineEl(line, n, tokens?.[n - 1], {
       interactive: paint.interactive,
       picked: Boolean(paint.picked?.(n)),
       marked: Boolean(paint.marked?.(n)),
       onLine: paint.onLine,
     }));
-    paint.afterLine?.(n, wrap);
+    paint.afterLine?.(n, host);
   }
-  return wrap;
 }
 
 function hunkLineEl(

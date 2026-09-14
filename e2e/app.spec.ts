@@ -218,7 +218,9 @@ test("long hunk lines scroll inside the hunk, not the pane", async ({ page }) =>
       return null;
     }
     const gutter = wrap.querySelector(".hunk-gutter");
-    const lineWidths = [...wrap.querySelectorAll(".hunk-line")].map((el) => el.offsetWidth);
+    const lineWidths = [...wrap.querySelectorAll(".hunk-line")]
+      .filter((node) => node instanceof HTMLElement && node.offsetWidth > 0)
+      .map((node) => node.offsetWidth);
     const before = {
       reel: reel.scrollWidth - reel.clientWidth,
       rowX: row.getBoundingClientRect().x,

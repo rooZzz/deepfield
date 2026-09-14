@@ -41,7 +41,7 @@ export function relocate(
 }
 
 export function lineKind(line: string): "add" | "del" | "meta" | "ctx" {
-  if (line.startsWith("@@") || line.startsWith("diff ") || line.startsWith("index ") || line.startsWith("+++") || line.startsWith("---")) {
+  if (line.startsWith("@@") || isGitFileHeader(line)) {
     return "meta";
   }
   if (line.startsWith("+")) {
@@ -84,4 +84,33 @@ export function excerptRange(total: number, from: number, to: number, pad: numbe
     start: Math.max(1, lo - pad),
     end: Math.min(total, hi + pad),
   };
+}
+
+export function isGitFileHeader(line: string): boolean {
+  return (
+    line.startsWith("diff ") ||
+    line.startsWith("index ") ||
+    line.startsWith("new file mode") ||
+    line.startsWith("deleted file mode") ||
+    line.startsWith("old mode") ||
+    line.startsWith("new mode") ||
+    line.startsWith("similarity index") ||
+    line.startsWith("rename from") ||
+    line.startsWith("rename to") ||
+    line.startsWith("copy from") ||
+    line.startsWith("copy to") ||
+    line.startsWith("--- ") ||
+    line.startsWith("+++ ")
+  );
+}
+
+export function gitHeaderEnd(rows: string[]): number {
+  let end = 0;
+  for (const line of rows) {
+    if (!isGitFileHeader(line)) {
+      break;
+    }
+    end += 1;
+  }
+  return end;
 }

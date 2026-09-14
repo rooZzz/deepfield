@@ -277,7 +277,10 @@ evidence (title and excerpt on hover). Files with no hit have no chip.
 Each hunk line stays a clickable row (unified diff: marker, line
 number, code). Syntax colour is **Shiki tokens** on the code after the
 marker. Add and delete are the line class (background), not a diff
-widget, Monaco, or a side-by-side editor. Long lines do not widen the
+widget, Monaco, or a side-by-side editor. Git file headers (`diff
+--git`, mode, `index`, `---` / `+++`) start collapsed: the first line
+is a disclosure; open it for the rest of the command. Hunk marks (`@@`)
+and the change stay visible. Long lines do not widen the
 pane or wrap. The hunk scrolls horizontally as a unit; marker and line
 number stay pinned. Add / delete tint is the hunk width, not the length
 of that line.
@@ -380,7 +383,8 @@ on the sticky file header, not in a hit list above the diff.
 
 - Filename in the title bar; `repo/path` on the sticky header
 - Hits that cite this file as chips under that path
-- Hunks for that file in the same pane
+- Hunks for that file in the same pane. Git command headers are a
+  closed disclosure on the first line, not four rows of metadata
 
 ### Edge
 
