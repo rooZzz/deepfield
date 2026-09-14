@@ -304,9 +304,12 @@ listen for changes to .deepfield/inbox.json
   — when that file changes: make the changes, then regenerate the graph
 ```
 
-Generate is a CLI/script. Boot is a local server or static preview pointed
-at the graph file. Listen is a file watch (script or skill loop) on that
-one path. The agent does not invent a second channel.
+Generate is a CLI/script. Boot is a local server pointed at the graph
+file. A **GitHub Pages build** is a static fixture of the same SPA
+(baked `graph.json`; notes and ticks stay in the browser). It is a
+shareable demo, not the skill loop. Listen is a file watch (script or
+skill loop) on that one path. The agent does not invent a second
+channel.
 
 ### Web app
 
@@ -557,8 +560,10 @@ Answer these before Phase 1 hardens.
    warn?
 4. **Languages in v1.** TypeScript/JavaScript imports first, then a generic
    file-path fallback for everything else?
-5. **How the app is served.** Local static server started by the skill,
-   watching `graph.json` for reload? Proposed: yes.
+5. **How the app is served.** The skill loop boots a local Vite server
+   against `.deepfield/`. GitHub Pages hosts a static fixture demo of the
+   same SPA for sharing a link. Generate, inbox watch, and apply stay
+   local.
 6. **Inbox schema.** One JSON array of items vs newline JSON? Proposed:
    versioned JSON document, rewritten in place, so the watch is simple.
 7. **Auth and private code.** Graph documents stay on disk; never upload

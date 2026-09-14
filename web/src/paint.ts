@@ -13,6 +13,7 @@ import { inScope } from "./remarks.ts";
 import { applyLayout, dragRail } from "./resize.ts";
 import { pathProgress } from "./review.ts";
 import { scopeFiles, scopeKeyOf } from "./scope.ts";
+import { sessionLive } from "./session-api.ts";
 import { app, graphView } from "./state.ts";
 import { renderStaged } from "./staged.ts";
 
@@ -42,7 +43,8 @@ export function paint(fns: PaintFns): void {
   renderEmpty(graph.nodes.length === 0 && !app.failed, "no change to review");
   const high = graph.risks.filter((hit) => hit.severity === "high").length;
   const repos = new Set(files(graph).map((file) => file.repo));
-  renderStatus(app.failed ? "generate failed" : app.statusLine || `watching inbox · ${repos.size} services · ${high} high`, app.failed ? "fail" : app.statusLine ? "busy" : "ready");
+  const ready = sessionLive ? "watching inbox" : "demo";
+  renderStatus(app.failed ? "generate failed" : app.statusLine || `${ready} · ${repos.size} services · ${high} high`, app.failed ? "fail" : app.statusLine ? "busy" : "ready");
   renderVeil(false, "");
   const counts = Object.fromEntries(BUCKETS.map((b) => [b.id, files(graph).filter((f) => bucketOf(f) === b.id).length])) as Record<BucketId, number>;
   renderFilters(app.hidden, counts, files(graph).filter((file) => app.hidden.includes(bucketOf(file))).length, fns.toggleBucket);

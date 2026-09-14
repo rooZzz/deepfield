@@ -480,6 +480,7 @@ into a developer console.
 | --- | --- | --- |
 | generating | last graph remains, dimmed, or empty field on first run | `generating` |
 | ready, watching | full scene | `watching inbox` |
+| ready, hosted demo | full scene | `demo` |
 | inbox dirty (write just happened) | pins pending | `inbox sent` |
 | applying | field stays; do not blank | `applying · N notes` |
 | regenerating | ids that survive hold still; others fade/enter | `regenerating` |
